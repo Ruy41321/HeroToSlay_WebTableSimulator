@@ -1,0 +1,31 @@
+{
+  "// ============================================================": "",
+  "// FILE: package.json": "",
+  "// ============================================================ ": "",
+  "name": "hero-to-slay-simulator",
+  "version": "1.0.0",
+  "private": true,
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "index": "node indexer.js",
+    "test": "jest --runInBand",
+    "test:unit": "jest test/unit --runInBand",
+    "test:integration": "jest test/integration --runInBand",
+    "test:coverage": "jest --coverage --runInBand"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "socket.io-client": "^4.8.1"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testTimeout": 10000,
+    "forceExit": true
+  }
+}

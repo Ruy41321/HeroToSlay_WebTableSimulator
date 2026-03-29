@@ -1,0 +1,158 @@
+[
+  {
+    "id": 1,
+    "name": "cardDiamonds_10",
+    "path": "/Assets/Cards/Heroes/cardDiamonds_10.png",
+    "type": "hero"
+  },
+  {
+    "id": 2,
+    "name": "cardDiamonds_2",
+    "path": "/Assets/Cards/Heroes/cardDiamonds_2.png",
+    "type": "hero"
+  },
+  {
+    "id": 3,
+    "name": "cardDiamonds_3",
+    "path": "/Assets/Cards/Heroes/cardDiamonds_3.png",
+    "type": "hero"
+  },
+  {
+    "id": 4,
+    "name": "cardDiamonds_4",
+    "path": "/Assets/Cards/Heroes/cardDiamonds_4.png",
+    "type": "hero"
+  },
+  {
+    "id": 5,
+    "name": "cardDiamonds_5",
+    "path": "/Assets/Cards/Heroes/cardDiamonds_5.png",
+    "type": "hero"
+  },
+  {
+    "id": 6,
+    "name": "cardDiamonds_6",
+    "path": "/Assets/Cards/Heroes/cardDiamonds_6.png",
+    "type": "hero"
+  },
+  {
+    "id": 7,
+    "name": "cardDiamonds_7",
+    "path": "/Assets/Cards/Heroes/cardDiamonds_7.png",
+    "type": "hero"
+  },
+  {
+    "id": 8,
+    "name": "cardDiamonds_8",
+    "path": "/Assets/Cards/Heroes/cardDiamonds_8.png",
+    "type": "hero"
+  },
+  {
+    "id": 9,
+    "name": "cardDiamonds_9",
+    "path": "/Assets/Cards/Heroes/cardDiamonds_9.png",
+    "type": "hero"
+  },
+  {
+    "id": 10,
+    "name": "cardDiamonds_A",
+    "path": "/Assets/Cards/Heroes/cardDiamonds_A.png",
+    "type": "hero"
+  },
+  {
+    "id": 11,
+    "name": "cardDiamonds_J",
+    "path": "/Assets/Cards/Heroes/cardDiamonds_J.png",
+    "type": "hero"
+  },
+  {
+    "id": 12,
+    "name": "cardDiamonds_K",
+    "path": "/Assets/Cards/Heroes/cardDiamonds_K.png",
+    "type": "hero"
+  },
+  {
+    "id": 13,
+    "name": "cardDiamonds_Q",
+    "path": "/Assets/Cards/Heroes/cardDiamonds_Q.png",
+    "type": "hero"
+  },
+  {
+    "id": 14,
+    "name": "cardClubs_10",
+    "path": "/Assets/Cards/Monsters/cardClubs_10.png",
+    "type": "monster"
+  },
+  {
+    "id": 15,
+    "name": "cardClubs_2",
+    "path": "/Assets/Cards/Monsters/cardClubs_2.png",
+    "type": "monster"
+  },
+  {
+    "id": 16,
+    "name": "cardClubs_3",
+    "path": "/Assets/Cards/Monsters/cardClubs_3.png",
+    "type": "monster"
+  },
+  {
+    "id": 17,
+    "name": "cardClubs_4",
+    "path": "/Assets/Cards/Monsters/cardClubs_4.png",
+    "type": "monster"
+  },
+  {
+    "id": 18,
+    "name": "cardClubs_5",
+    "path": "/Assets/Cards/Monsters/cardClubs_5.png",
+    "type": "monster"
+  },
+  {
+    "id": 19,
+    "name": "cardClubs_6",
+    "path": "/Assets/Cards/Monsters/cardClubs_6.png",
+    "type": "monster"
+  },
+  {
+    "id": 20,
+    "name": "cardClubs_7",
+    "path": "/Assets/Cards/Monsters/cardClubs_7.png",
+    "type": "monster"
+  },
+  {
+    "id": 21,
+    "name": "cardClubs_8",
+    "path": "/Assets/Cards/Monsters/cardClubs_8.png",
+    "type": "monster"
+  },
+  {
+    "id": 22,
+    "name": "cardClubs_9",
+    "path": "/Assets/Cards/Monsters/cardClubs_9.png",
+    "type": "monster"
+  },
+  {
+    "id": 23,
+    "name": "cardClubs_A",
+    "path": "/Assets/Cards/Monsters/cardClubs_A.png",
+    "type": "monster"
+  },
+  {
+    "id": 24,
+    "name": "cardClubs_J",
+    "path": "/Assets/Cards/Monsters/cardClubs_J.png",
+    "type": "monster"
+  },
+  {
+    "id": 25,
+    "name": "cardClubs_K",
+    "path": "/Assets/Cards/Monsters/cardClubs_K.png",
+    "type": "monster"
+  },
+  {
+    "id": 26,
+    "name": "cardClubs_Q",
+    "path": "/Assets/Cards/Monsters/cardClubs_Q.png",
+    "type": "monster"
+  }
+]
