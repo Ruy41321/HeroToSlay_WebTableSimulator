@@ -1,0 +1,15 @@
+Fare che quando si clicca sul button Reset rispendisce anche i player correnti in lobby (attualmente continuano a vedere il tavolo di gioco)
+
+dare un minimo di padding all area Monster Deck e active monster.
+
+Le proprie carte devono essere sempre visibili a se stessi, cioe devono vederle scoperte, invece gli altri le vedono coperte.
+
+Nonostante si clicca su View Full Pile sulla pila degli scarti non viene mostrato nulla, invece dovrebbe mostrare tutte le carte scartate fino a quel momento.
+
+Inserisci qualche log nel browser console per capire se ci sono errori, e quando la partita viene resettata o avviata corretamente, non tantissimi ma giusto gli essenziali per capire se il flusso è corretto.	(ovviamente non devono apparire nel browser i log del gioco (event log e restricted Action History))
+
+Il nome dei giocatori scritto sul loro side scrivilo rivolto verso il bottom, attualmente è rivolto verso il loro side e si legge con difficolta essendo storto.
+
+Rendi l event log e restricted Action History toggleable, in modo da poterli nascondere quando non servono, e mostrare solo quando si vuole vedere la cronologia degli eventi o delle azioni.. tramite un pulsante sulla top bar insieme agli altri
+
+Aggiungi un azione possibile per i giocatore da fare sulla propria carta che sarebbe "Activate" che permetterebbe di giocare la carta e quallo che succede a schermo è che la carta viene spostata scoperta per tutti i giocatori nella zona avanti alle proprie carte. (Il proprio side deve essere diviso in mano (le carte coperte agli altri) come prima riga (piu vicina al bordo) e carte attivate (le carte giocate scoperte) come seconda riga, piu vicina al centro del tavolo rispetto alla prima riga). Quando si clicca su Activate su una carta, questa viene spostata dalla mano alla zona attivata, e diventa visibile a tutti i giocatori. Inoltre, quando una carta viene attivata, dovrebbe essere aggiunta un'azione al restricted Action History per tenere traccia di questa mossa. Inoltre una carta attivita permette le seguenti azioni restricted a tutti i giocatori : Take (va nella mano del giocatore che l ha fatto), Scarta (va nella pila degli scarti)

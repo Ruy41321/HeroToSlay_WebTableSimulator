@@ -1,0 +1,32 @@
+# ============================================================
+# FILE: docker-compose.yml
+# ============================================================
+
+services:
+  simulator:
+    build:
+      context: ..
+      dockerfile: HtS_Docker/Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../Assets:/app/Assets:ro
+      - ../Assets:/app/Srcs/Assets:ro
+      - ../Srcs/cards.json:/app/cards.json:ro
+      - ../Srcs/cards.json:/app/Srcs/cards.json:ro
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+
+  test:
+    build:
+      context: ..
+      dockerfile: HtS_Docker/Dockerfile
+    volumes:
+      - ../Assets:/app/Assets:ro
+      - ../Assets:/app/Srcs/Assets:ro
+      - ../Srcs/cards.json:/app/cards.json:ro
+      - ../Srcs/cards.json:/app/Srcs/cards.json:ro
+    command: npm test
+    profiles:
+      - "test"

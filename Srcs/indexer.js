@@ -6,18 +6,20 @@ const fs = require('fs');
 const path = require('path');
 
 const PROJECT_ROOT = __dirname;
+const REPOSITORY_ROOT = path.resolve(PROJECT_ROOT, '..');
+const ASSETS_ROOT = path.join(REPOSITORY_ROOT, 'Assets');
 const OUTPUT_FILE_PATH = path.join(PROJECT_ROOT, 'cards.json');
 const ACCEPTED_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp']);
 
 const CARD_FOLDERS = [
   {
     type: 'hero',
-    absolutePath: path.join(PROJECT_ROOT, 'Assets', 'Cards', 'Heroes'),
+    absolutePath: path.join(ASSETS_ROOT, 'Cards', 'Heroes'),
     publicBasePath: '/Assets/Cards/Heroes'
   },
   {
     type: 'monster',
-    absolutePath: path.join(PROJECT_ROOT, 'Assets', 'Cards', 'Monsters'),
+    absolutePath: path.join(ASSETS_ROOT, 'Cards', 'Monsters'),
     publicBasePath: '/Assets/Cards/Monsters'
   }
 ];
