@@ -15,7 +15,7 @@
           default: false
         }
       },
-      emits: ['join', 'join-spectator', 'start', 'reset-lobby'],
+      emits: ['join', 'join-spectator', 'start', 'reset-lobby', 'cycle-background'],
       data() {
         return {
           nicknameInput: '',
@@ -56,7 +56,12 @@
       template: `
         <section class="lobby-view">
           <div class="lobby-controls">
-            <h1>Hero to Slay Lobby</h1>
+            <div class="lobby-header-row">
+              <h1>Hero to Slay Lobby</h1>
+              <button type="button" class="lobby-bg-button" @click="$emit('cycle-background')">
+                Change Background
+              </button>
+            </div>
 
             <div v-if="gameInProgress" class="lobby-waiting-message">
               <p>Game in progress - player queue is locked</p>

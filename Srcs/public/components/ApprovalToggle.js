@@ -8,7 +8,7 @@
       props: {
         approvalMode: {
           type: Boolean,
-          default: true
+          default: false
         }
       },
       emits: ['toggle'],

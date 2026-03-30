@@ -166,7 +166,7 @@ class GameManager {
       monsterDeck: monsterDeck.cards,
       activeMonsters: [null, null, null],
       discardPile: [],
-      approvalMode: true,
+      approvalMode: false,
       phase: 'playing'
     };
 
@@ -410,7 +410,7 @@ class GameManager {
       monsterDeck: [],
       activeMonsters: [null, null, null],
       discardPile: [],
-      approvalMode: true,
+      approvalMode: false,
       phase: 'lobby'
     };
   }

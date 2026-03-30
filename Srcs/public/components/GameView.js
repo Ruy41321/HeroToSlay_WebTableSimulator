@@ -87,11 +87,11 @@
         },
         showEventLog: {
           type: Boolean,
-          default: true
+          default: false
         },
         showRestrictedLog: {
           type: Boolean,
-          default: true
+          default: false
         },
         lastDiceRoll: {
           type: Number,
@@ -99,7 +99,7 @@
         },
         approvalMode: {
           type: Boolean,
-          default: true
+          default: false
         },
         showDiscardModal: {
           type: Boolean,
@@ -131,7 +131,8 @@
         'toggle-approval',
         'toggle-event-log',
         'toggle-restricted-log',
-        'reset-lobby'
+        'reset-lobby',
+        'cycle-background'
       ],
       data() {
         return {
@@ -1035,6 +1036,10 @@
               @click="$emit('toggle-restricted-log')"
             >
               {{ showRestrictedLog ? 'Hide Action History' : 'Show Action History' }}
+            </button>
+
+            <button type="button" class="approval-toggle" @click="$emit('cycle-background')">
+              Change Background
             </button>
 
             <button v-if="!isSpectator" type="button" class="undo-button" @click="requestUndo">Undo</button>

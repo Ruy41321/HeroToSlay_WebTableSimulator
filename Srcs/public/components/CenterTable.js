@@ -51,6 +51,16 @@
             name: top && top.name ? top.name : 'MainHero Deck'
           };
         },
+        topMainHeroCard() {
+          if (!Array.isArray(this.mainHeroDeck) || this.mainHeroDeck.length === 0) {
+            return null;
+          }
+
+          return {
+            ...(this.mainHeroDeck[0] || {}),
+            isFaceUp: true
+          };
+        },
         monsterDeckProxyCard() {
           const top = this.monsterDeck[0] || null;
 
@@ -117,7 +127,7 @@
           <div class="center-pile mainhero-deck-pile">
             <div class="pile-label">MainHero Deck ({{ mainHeroDeck.length }})</div>
             <card-component
-              :card="mainHeroDeckProxyCard"
+              :card="topMainHeroCard || mainHeroDeckProxyCard"
               zone="mainhero-deck"
               :is-own="false"
               @hover="forwardHover"

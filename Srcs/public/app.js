@@ -22,8 +22,13 @@
         pendingOwnRequest: null,
         eventLog: [],
         restrictedLog: [],
-        showEventLog: true,
-        showRestrictedLog: true,
+        showEventLog: false,
+        showRestrictedLog: false,
+        availableBackgrounds: [
+          '/Assets/Miscellaneous/table_background.png',
+          '/Assets/Miscellaneous/bg.jpg',
+        ],
+        currentBackgroundIndex: 0,
         lastDiceRoll: null,
         discardPileModal: [],
         showDiscardModal: false,
@@ -37,8 +42,11 @@
           return this.gameState.approvalMode;
         }
 
-        return true;
+        return false;
       }
+    },
+    mounted() {
+      this.applyCurrentBackground();
     },
     created() {
       if (!this.socket) {
@@ -381,6 +389,29 @@
       onToggleRestrictedLog() {
         this.showRestrictedLog = !this.showRestrictedLog;
       },
+      applyCurrentBackground() {
+        const backgroundImage =
+          this.availableBackgrounds[this.currentBackgroundIndex] || this.availableBackgrounds[0];
+
+        if (!backgroundImage || !document || !document.body) {
+          return;
+        }
+
+        document.body.style.backgroundImage = `url('${backgroundImage}')`;
+        document.body.style.backgroundPosition = 'center';
+        document.body.style.backgroundSize = 'cover';
+        document.body.style.backgroundRepeat = 'no-repeat';
+        document.body.style.backgroundAttachment = 'fixed';
+      },
+      cycleBackground() {
+        if (!Array.isArray(this.availableBackgrounds) || this.availableBackgrounds.length === 0) {
+          return;
+        }
+
+        this.currentBackgroundIndex =
+          (this.currentBackgroundIndex + 1) % this.availableBackgrounds.length;
+        this.applyCurrentBackground();
+      },
       resetLobby() {
         if (!this.socket) {
           return;
@@ -399,6 +430,7 @@
           @join-spectator="joinSpectator"
           @start="startGame"
           @reset-lobby="resetLobby"
+          @cycle-background="cycleBackground"
         ></lobby-view>
 
         <game-view
@@ -431,6 +463,7 @@
           @toggle-event-log="onToggleEventLog"
           @toggle-restricted-log="onToggleRestrictedLog"
           @reset-lobby="resetLobby"
+          @cycle-background="cycleBackground"
         ></game-view>
 
         <div v-else class="loading-screen">
