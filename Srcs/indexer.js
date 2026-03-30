@@ -13,68 +13,98 @@ const ACCEPTED_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp']);
 
 const CARD_FOLDERS = [
   {
-    type: 'hero',
+    type: 'MainHero',
     absolutePath: path.join(ASSETS_ROOT, 'Cards', 'Heroes'),
     publicBasePath: '/Assets/Cards/Heroes'
   },
   {
-    type: 'mainhero',
-    absolutePath: path.join(ASSETS_ROOT, 'Cards', 'MainHeroes'),
-    publicBasePath: '/Assets/Cards/MainHeroes'
+    type: 'DeckCards',
+    absolutePath: path.join(ASSETS_ROOT, 'Cards', 'Deck'),
+    publicBasePath: '/Assets/Cards/Deck'
   },
   {
-    type: 'monster',
+    type: 'Monsters',
     absolutePath: path.join(ASSETS_ROOT, 'Cards', 'Monsters'),
     publicBasePath: '/Assets/Cards/Monsters'
   }
 ];
 
-function normalizeToPublicPath(basePath, filename) {
-  const joined = path.posix.join(basePath, filename);
+function normalizeToPublicPath(basePath, relativePath) {
+  const joined = path.posix.join(basePath, relativePath);
   return joined.startsWith('/') ? joined : `/${joined}`;
 }
 
-function readImageFiles(folderPath) {
+function toPosixPath(value) {
+  return value.split(path.sep).join(path.posix.sep);
+}
+
+function walkImageFilesRecursive(folderPath, relativeRoot = '') {
   if (!fs.existsSync(folderPath)) {
     return [];
   }
 
   const directoryEntries = fs.readdirSync(folderPath, { withFileTypes: true });
+  const imagePaths = [];
 
-  return directoryEntries
-    .filter((entry) => entry.isFile())
-    .map((entry) => entry.name)
-    .filter((filename) => ACCEPTED_EXTENSIONS.has(path.extname(filename).toLowerCase()))
-    .sort((a, b) => a.localeCompare(b));
+  for (const entry of directoryEntries) {
+    const absoluteEntryPath = path.join(folderPath, entry.name);
+    const relativeEntryPath = relativeRoot ? path.join(relativeRoot, entry.name) : entry.name;
+
+    if (entry.isDirectory()) {
+      imagePaths.push(...walkImageFilesRecursive(absoluteEntryPath, relativeEntryPath));
+      continue;
+    }
+
+    if (!entry.isFile()) {
+      continue;
+    }
+
+    if (!ACCEPTED_EXTENSIONS.has(path.extname(entry.name).toLowerCase())) {
+      continue;
+    }
+
+    imagePaths.push(toPosixPath(relativeEntryPath));
+  }
+
+  return imagePaths.sort((a, b) => a.localeCompare(b));
 }
 
 function buildCards() {
   const cards = [];
   const counts = {
-    hero: 0,
-    mainhero: 0,
-    monster: 0
+    MainHero: 0,
+    DeckCards: 0,
+    Monsters: 0
   };
 
   let currentId = 1;
 
   for (const folder of CARD_FOLDERS) {
-    const filenames = readImageFiles(folder.absolutePath);
+    if (!fs.existsSync(folder.absolutePath)) {
+      console.warn(`Skipped missing folder: ${folder.absolutePath}`);
+      continue;
+    }
 
-    for (const filename of filenames) {
-      const cardName = path.basename(filename, path.extname(filename));
+    const relativeImagePaths = walkImageFilesRecursive(folder.absolutePath);
+
+    if (relativeImagePaths.length === 0) {
+      console.warn(`No supported images found in: ${folder.absolutePath}`);
+    }
+
+    for (const relativeImagePath of relativeImagePaths) {
+      const cardName = path.basename(relativeImagePath, path.extname(relativeImagePath));
 
       cards.push({
         id: currentId,
         name: cardName,
-        path: normalizeToPublicPath(folder.publicBasePath, filename),
+        path: normalizeToPublicPath(folder.publicBasePath, relativeImagePath),
         type: folder.type
       });
 
       currentId += 1;
     }
 
-    counts[folder.type] = filenames.length;
+    counts[folder.type] = relativeImagePaths.length;
   }
 
   return { cards, counts };
@@ -83,12 +113,12 @@ function buildCards() {
 function main() {
   const { cards, counts } = buildCards();
 
-  console.log(`Heroes found: ${counts.hero}`);
-  console.log(`MainHeroes found: ${counts.mainhero}`);
-  console.log(`Monsters found: ${counts.monster}`);
+  console.log(`MainHero found: ${counts.MainHero}`);
+  console.log(`DeckCards found: ${counts.DeckCards}`);
+  console.log(`Monsters found: ${counts.Monsters}`);
 
   if (cards.length === 0) {
-    console.error('No card images found in Heroes, MainHeroes, or Monsters folders.');
+    console.error('No card images found in Heroes, Deck, or Monsters folders.');
     process.exit(1);
   }
 

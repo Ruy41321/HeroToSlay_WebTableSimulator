@@ -322,6 +322,25 @@
           zone
         });
       },
+      moveBoardCard(payload = {}) {
+        if (!this.socket || this.isSpectator) {
+          return;
+        }
+
+        const x = Number(payload.x);
+        const y = Number(payload.y);
+
+        if (!Number.isFinite(x) || !Number.isFinite(y)) {
+          return;
+        }
+
+        this.socket.emit('move_board_card', {
+          cardId: payload.cardId,
+          targetPlayerId: payload.targetPlayerId,
+          x,
+          y
+        });
+      },
       viewDiscard() {
         if (!this.socket) {
           return;
@@ -402,6 +421,7 @@
           @request-action="requestAction"
           @respond-approval="respondApproval"
           @flip-card="flipCard"
+          @move-board-card="moveBoardCard"
           @view-discard="viewDiscard"
           @view-main-hero-deck="viewMainHeroDeck"
           @close-discard-modal="closeDiscardModal"

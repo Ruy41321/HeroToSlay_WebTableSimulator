@@ -10,7 +10,7 @@ function buildCards(ids) {
 
 describe('Deck', () => {
   test('shuffle changes card order from original', () => {
-    const deck = new Deck('hero', buildCards([1, 2, 3, 4]));
+    const deck = new Deck('DeckCards', buildCards([1, 2, 3, 4]));
     const originalOrder = deck.cards.map((card) => card.id);
 
     const randomSpy = jest.spyOn(Math, 'random').mockReturnValue(0);
@@ -25,7 +25,7 @@ describe('Deck', () => {
   });
 
   test('draw returns top card and reduces size by one', () => {
-    const deck = new Deck('hero', buildCards([10, 11]));
+    const deck = new Deck('DeckCards', buildCards([10, 11]));
 
     const first = deck.draw();
 
@@ -34,13 +34,13 @@ describe('Deck', () => {
   });
 
   test('draw on empty deck returns null', () => {
-    const deck = new Deck('hero', []);
+    const deck = new Deck('DeckCards', []);
 
     expect(deck.draw()).toBeNull();
   });
 
   test('peek returns top n cards without removing them', () => {
-    const deck = new Deck('monster', buildCards([21, 22, 23, 24]));
+    const deck = new Deck('Monsters', buildCards([21, 22, 23, 24]));
 
     const topTwo = deck.peek(2);
 
@@ -49,7 +49,7 @@ describe('Deck', () => {
   });
 
   test('size getter returns remaining cards count', () => {
-    const deck = new Deck('monster', buildCards([31, 32, 33]));
+    const deck = new Deck('Monsters', buildCards([31, 32, 33]));
 
     expect(deck.size).toBe(3);
     deck.draw();

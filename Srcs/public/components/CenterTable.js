@@ -34,10 +34,10 @@
 
           return {
             id: top ? top.id : 'hero-deck',
-            type: 'hero',
+            type: 'DeckCards',
             isFaceUp: false,
             path: '',
-            name: top && top.name ? top.name : 'Hero Deck'
+            name: top && top.name ? top.name : 'DeckCards'
           };
         },
         mainHeroDeckProxyCard() {
@@ -45,7 +45,7 @@
 
           return {
             id: top ? top.id : 'mainhero-deck',
-            type: 'mainhero',
+            type: 'MainHero',
             isFaceUp: false,
             path: '',
             name: top && top.name ? top.name : 'MainHero Deck'
@@ -56,10 +56,10 @@
 
           return {
             id: top ? top.id : 'monster-deck',
-            type: 'monster',
+            type: 'Monsters',
             isFaceUp: false,
             path: '',
-            name: top && top.name ? top.name : 'Monster Deck'
+            name: top && top.name ? top.name : 'Monsters Deck'
           };
         },
         normalizedActiveMonsters() {
@@ -127,7 +127,7 @@
           </div>
 
           <div class="center-pile hero-deck-pile">
-            <div class="pile-label">Hero Deck ({{ heroDeck.length }})</div>
+            <div class="pile-label">DeckCards ({{ heroDeck.length }})</div>
             <card-component
               :card="heroDeckProxyCard"
               zone="hero-deck"
@@ -138,37 +138,39 @@
             ></card-component>
           </div>
 
-          <div class="center-pile monster-deck-pile">
-            <div class="pile-label">Monster Deck ({{ monsterDeck.length }})</div>
-            <card-component
-              :card="monsterDeckProxyCard"
-              zone="monster-deck"
-              :is-own="false"
-              @hover="forwardHover"
-              @unhover="forwardUnhover"
-              @rightclick="forwardRightclick"
-            ></card-component>
-          </div>
+          <div class="monster-center-group">
+            <div class="center-pile monster-deck-pile">
+              <div class="pile-label">Monsters Deck ({{ monsterDeck.length }})</div>
+              <card-component
+                :card="monsterDeckProxyCard"
+                zone="monster-deck"
+                :is-own="false"
+                @hover="forwardHover"
+                @unhover="forwardUnhover"
+                @rightclick="forwardRightclick"
+              ></card-component>
+            </div>
 
-          <div class="active-monster-slots">
-            <div class="pile-label">Active Monsters</div>
-            <div class="active-monster-row">
-              <div
-                v-for="(monsterCard, slotIndex) in normalizedActiveMonsters"
-                :key="'active-slot-' + slotIndex"
-                class="active-monster-slot"
-              >
-                <card-component
-                  v-if="monsterCard"
-                  :card="monsterCard"
-                  zone="active-monster"
-                  :is-own="false"
-                  @hover="forwardHover"
-                  @unhover="forwardUnhover"
-                  @rightclick="forwardRightclick($event, slotIndex)"
-                ></card-component>
+            <div class="active-monster-slots">
+              <div class="pile-label">Active Monsters</div>
+              <div class="active-monster-row">
+                <div
+                  v-for="(monsterCard, slotIndex) in normalizedActiveMonsters"
+                  :key="'active-slot-' + slotIndex"
+                  class="active-monster-slot"
+                >
+                  <card-component
+                    v-if="monsterCard"
+                    :card="monsterCard"
+                    zone="active-monster"
+                    :is-own="false"
+                    @hover="forwardHover"
+                    @unhover="forwardUnhover"
+                    @rightclick="forwardRightclick($event, slotIndex)"
+                  ></card-component>
 
-                <div v-else class="monster-slot-empty"></div>
+                  <div v-else class="monster-slot-empty"></div>
+                </div>
               </div>
             </div>
           </div>

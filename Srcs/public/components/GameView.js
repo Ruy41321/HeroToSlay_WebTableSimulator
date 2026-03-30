@@ -3,6 +3,57 @@
 // ============================================================
 
 (function registerGameViewComponent() {
+  const BOARD_CARD_WIDTH = 80;
+  const BOARD_CARD_HEIGHT = 112;
+  const CANONICAL_BOARD_SPACE = {
+    width: 340,
+    height: 220
+  };
+  const BOARD_SPACES = {
+    horizontal: {
+      width: 500,
+      height: 244
+    },
+    vertical: {
+      width: 244,
+      height: 500
+    }
+  };
+
+  function normalizeBoardSide(side) {
+    if (side === 'top' || side === 'left' || side === 'right' || side === 'bottom') {
+      return side;
+    }
+
+    return 'bottom';
+  }
+
+  function getBoardSpaceBySide(side) {
+    const normalized = normalizeBoardSide(side);
+
+    if (normalized === 'left' || normalized === 'right') {
+      return BOARD_SPACES.vertical;
+    }
+
+    return BOARD_SPACES.horizontal;
+  }
+
+  function getMovableBoardBoundsBySide(side) {
+    const boardSpace = getBoardSpaceBySide(side);
+
+    return {
+      maxX: Math.max(boardSpace.width - BOARD_CARD_WIDTH, 0),
+      maxY: Math.max(boardSpace.height - BOARD_CARD_HEIGHT, 0)
+    };
+  }
+
+  function getCanonicalMovableBoardBounds() {
+    return {
+      maxX: Math.max(CANONICAL_BOARD_SPACE.width - BOARD_CARD_WIDTH, 0),
+      maxY: Math.max(CANONICAL_BOARD_SPACE.height - BOARD_CARD_HEIGHT, 0)
+    };
+  }
+
   function install(app) {
     app.component('game-view', {
       props: {
@@ -71,6 +122,7 @@
         'request-action',
         'respond-approval',
         'flip-card',
+        'move-board-card',
         'view-discard',
         'view-main-hero-deck',
         'close-discard-modal',
@@ -87,8 +139,22 @@
           contextMenuVisible: false,
           contextMenuX: 0,
           contextMenuY: 0,
-          contextMenuOptions: []
+          contextMenuOptions: [],
+          localBoardCardMoveOverrides: {},
+          localBoardRotationByCardId: {},
+          boardOverrideCleanupTimers: {},
+          dragState: null,
+          activeDragCardId: null,
+          lastBoardContainerByCardId: {}
         };
+      },
+      mounted() {
+        window.addEventListener('keydown', this.onGlobalKeyDown);
+      },
+      beforeUnmount() {
+        window.removeEventListener('keydown', this.onGlobalKeyDown);
+        this.detachBoardDragListeners();
+        this.clearAllBoardOverrideTimers();
       },
       computed: {
         players() {
@@ -121,6 +187,70 @@
         },
         rightOpponent() {
           return this.opponents[2] || null;
+        },
+        serverBoardContainerByCardId() {
+          const snapshot = {};
+
+          for (const player of this.players) {
+            const playerId = String(player.id);
+            const board = Array.isArray(player.board) ? player.board : [];
+
+            for (const card of board) {
+              if (!card) {
+                continue;
+              }
+
+              snapshot[String(card.id)] = playerId;
+            }
+          }
+
+          return snapshot;
+        },
+        boardCardsByPlayerId() {
+          const grouped = {};
+
+          for (const player of this.players) {
+            grouped[String(player.id)] = [];
+          }
+
+          for (const player of this.players) {
+            const playerId = String(player.id);
+            const board = Array.isArray(player.board) ? player.board : [];
+
+            board.forEach((card, cardIndex) => {
+              if (!card) {
+                return;
+              }
+
+              const cardId = String(card.id);
+              const moveOverride = this.localBoardCardMoveOverrides[cardId] || null;
+              const rawTargetId = moveOverride && moveOverride.targetPlayerId ? String(moveOverride.targetPlayerId) : playerId;
+              const targetPlayerId = Object.prototype.hasOwnProperty.call(grouped, rawTargetId)
+                ? rawTargetId
+                : playerId;
+              const targetBoardSide = this.getBoardSideByPlayerId(targetPlayerId);
+              const baseCanonicalPosition = this.getSanitizedBoardPosition(card.boardPosition, cardIndex);
+              const runtimeCanonicalPosition =
+                moveOverride && this.isFiniteNumber(moveOverride.x) && this.isFiniteNumber(moveOverride.y)
+                  ? this.getSanitizedBoardPosition({ x: moveOverride.x, y: moveOverride.y }, cardIndex)
+                  : baseCanonicalPosition;
+              const runtimePosition = this.fromCanonicalToSideBoardCoordinates(
+                runtimeCanonicalPosition,
+                targetBoardSide
+              );
+
+              grouped[targetPlayerId].push({
+                ...card,
+                ownerId: card.ownerId || player.id,
+                boardPosition: runtimePosition,
+                canonicalBoardPosition: runtimeCanonicalPosition,
+                boardContainerPlayerId: targetPlayerId,
+                localRotationDelta: this.normalizeBoardRotationDelta(this.localBoardRotationByCardId[cardId])
+              });
+            });
+          }
+
+          return grouped;
         },
         safeHeroDeck() {
           return Array.isArray(this.gameState.heroDeck) ? this.gameState.heroDeck : [];
@@ -166,7 +296,483 @@
           return this.pendingApproval;
         }
       },
+      watch: {
+        serverBoardContainerByCardId: {
+          immediate: true,
+          handler(nextSnapshot) {
+            const previousSnapshot = this.lastBoardContainerByCardId || {};
+
+            Object.keys(nextSnapshot).forEach((cardId) => {
+              if (
+                previousSnapshot[cardId] &&
+                String(previousSnapshot[cardId]) !== String(nextSnapshot[cardId])
+              ) {
+                delete this.localBoardRotationByCardId[cardId];
+                this.clearBoardCardMoveOverride(cardId);
+              }
+            });
+
+            Object.keys(this.localBoardRotationByCardId).forEach((cardId) => {
+              if (!Object.prototype.hasOwnProperty.call(nextSnapshot, cardId)) {
+                delete this.localBoardRotationByCardId[cardId];
+              }
+            });
+
+            Object.keys(this.localBoardCardMoveOverrides).forEach((cardId) => {
+              if (!Object.prototype.hasOwnProperty.call(nextSnapshot, cardId)) {
+                this.clearBoardCardMoveOverride(cardId);
+              }
+            });
+
+            this.lastBoardContainerByCardId = { ...nextSnapshot };
+
+            if (!this.dragState) {
+              return;
+            }
+
+            const activeCardId = String(this.dragState.cardId);
+            const cardStillVisible = Object.prototype.hasOwnProperty.call(nextSnapshot, activeCardId);
+
+            if (!cardStillVisible) {
+              this.stopBoardDrag(false);
+            }
+
+            const expectedTarget = String(this.dragState.activeTargetPlayerId || this.dragState.originPlayerId);
+            if (nextSnapshot[activeCardId] && String(nextSnapshot[activeCardId]) === expectedTarget) {
+              this.clearBoardCardMoveOverride(activeCardId);
+            }
+          }
+        }
+      },
       methods: {
+        isFiniteNumber(value) {
+          return typeof value === 'number' && Number.isFinite(value);
+        },
+        normalizeBoardRotationDelta(rotation) {
+          if (!this.isFiniteNumber(rotation)) {
+            return 0;
+          }
+
+          const snapped = Math.round(rotation / 90) * 90;
+          return ((snapped % 360) + 360) % 360;
+        },
+        isBoardCardOwnedByLocalPlayer(card) {
+          const ownerId = card && card.ownerId ? String(card.ownerId) : null;
+          return Boolean(ownerId && this.localPlayerId && ownerId === String(this.localPlayerId));
+        },
+        getBoardSideByPlayerId(playerId) {
+          const normalizedPlayerId = String(playerId);
+
+          if (this.localPlayer && String(this.localPlayer.id) === normalizedPlayerId) {
+            return 'bottom';
+          }
+
+          if (this.topOpponent && String(this.topOpponent.id) === normalizedPlayerId) {
+            return 'top';
+          }
+
+          if (this.leftOpponent && String(this.leftOpponent.id) === normalizedPlayerId) {
+            return 'left';
+          }
+
+          if (this.rightOpponent && String(this.rightOpponent.id) === normalizedPlayerId) {
+            return 'right';
+          }
+
+          return 'bottom';
+        },
+        getSideMovableBounds(boardSide = 'bottom') {
+          return getMovableBoardBoundsBySide(boardSide);
+        },
+        getCanonicalMovableBounds() {
+          return getCanonicalMovableBoardBounds();
+        },
+        clampRatio(value) {
+          if (!this.isFiniteNumber(value)) {
+            return 0;
+          }
+
+          return Math.min(Math.max(value, 0), 1);
+        },
+        toNormalizedRatio(value, max) {
+          if (!this.isFiniteNumber(value) || !this.isFiniteNumber(max) || max <= 0) {
+            return 0;
+          }
+
+          return this.clampRatio(value / max);
+        },
+        fromNormalizedRatio(value, max) {
+          if (!this.isFiniteNumber(max) || max <= 0) {
+            return 0;
+          }
+
+          return Math.round(this.clampRatio(value) * max);
+        },
+        mapCanonicalRatiosToSide(u, v, boardSide = 'bottom') {
+          const side = normalizeBoardSide(boardSide);
+
+          switch (side) {
+            case 'top':
+              return { u: 1 - u, v: 1 - v };
+            case 'right':
+              return { u: v, v: 1 - u };
+            case 'left':
+              return { u: 1 - v, v: u };
+            default:
+              return { u, v };
+          }
+        },
+        mapSideRatiosToCanonical(u, v, boardSide = 'bottom') {
+          const side = normalizeBoardSide(boardSide);
+
+          switch (side) {
+            case 'top':
+              return { u: 1 - u, v: 1 - v };
+            case 'right':
+              return { u: 1 - v, v: u };
+            case 'left':
+              return { u: v, v: 1 - u };
+            default:
+              return { u, v };
+          }
+        },
+        getFallbackBoardPosition(cardIndex = 0) {
+          const safeIndex = Number.isInteger(cardIndex) && cardIndex >= 0 ? cardIndex : 0;
+          return this.clampBoardCoordinates(
+            12 + (safeIndex % 5) * 26,
+            12 + Math.floor(safeIndex / 5) * 28
+          );
+        },
+        getSanitizedBoardPosition(position, cardIndex = 0) {
+          if (
+            position &&
+            typeof position === 'object' &&
+            this.isFiniteNumber(position.x) &&
+            this.isFiniteNumber(position.y)
+          ) {
+            return this.clampBoardCoordinates(position.x, position.y);
+          }
+
+          return this.getFallbackBoardPosition(cardIndex);
+        },
+        clampBoardCoordinatesForSide(x, y, boardSide = 'bottom') {
+          const bounds = this.getSideMovableBounds(boardSide);
+
+          return {
+            x: Math.round(Math.min(Math.max(x, 0), bounds.maxX)),
+            y: Math.round(Math.min(Math.max(y, 0), bounds.maxY))
+          };
+        },
+        clampPointerCoordinatesForSide(x, y, boardSide = 'bottom') {
+          const boardSpace = getBoardSpaceBySide(boardSide);
+
+          return {
+            x: Math.round(Math.min(Math.max(x, 0), boardSpace.width)),
+            y: Math.round(Math.min(Math.max(y, 0), boardSpace.height))
+          };
+        },
+        clampBoardCoordinates(x, y) {
+          const bounds = this.getCanonicalMovableBounds();
+
+          return {
+            x: Math.round(Math.min(Math.max(x, 0), bounds.maxX)),
+            y: Math.round(Math.min(Math.max(y, 0), bounds.maxY))
+          };
+        },
+        fromCanonicalToSideBoardCoordinates(position, boardSide = 'bottom') {
+          const canonicalPosition = this.getSanitizedBoardPosition(position, 0);
+          const canonicalBounds = this.getCanonicalMovableBounds();
+          const sideBounds = this.getSideMovableBounds(boardSide);
+          const canonicalU = this.toNormalizedRatio(canonicalPosition.x, canonicalBounds.maxX);
+          const canonicalV = this.toNormalizedRatio(canonicalPosition.y, canonicalBounds.maxY);
+          const mapped = this.mapCanonicalRatiosToSide(canonicalU, canonicalV, boardSide);
+
+          return {
+            x: this.fromNormalizedRatio(mapped.u, sideBounds.maxX),
+            y: this.fromNormalizedRatio(mapped.v, sideBounds.maxY)
+          };
+        },
+        fromSideToCanonicalBoardCoordinates(position, boardSide = 'bottom') {
+          if (
+            !position ||
+            typeof position !== 'object' ||
+            !this.isFiniteNumber(position.x) ||
+            !this.isFiniteNumber(position.y)
+          ) {
+            return this.getFallbackBoardPosition(0);
+          }
+
+          const sidePosition = this.clampBoardCoordinatesForSide(position.x, position.y, boardSide);
+          const sideBounds = this.getSideMovableBounds(boardSide);
+          const canonicalBounds = this.getCanonicalMovableBounds();
+          const sideU = this.toNormalizedRatio(sidePosition.x, sideBounds.maxX);
+          const sideV = this.toNormalizedRatio(sidePosition.y, sideBounds.maxY);
+          const mapped = this.mapSideRatiosToCanonical(sideU, sideV, boardSide);
+
+          return {
+            x: this.fromNormalizedRatio(mapped.u, canonicalBounds.maxX),
+            y: this.fromNormalizedRatio(mapped.v, canonicalBounds.maxY)
+          };
+        },
+        getBoardCardsForPlayer(playerId) {
+          const key = String(playerId);
+          const cards = this.boardCardsByPlayerId[key];
+          return Array.isArray(cards) ? cards : [];
+        },
+        setLocalBoardCardMoveOverride(cardId, state) {
+          const key = String(cardId);
+          if (!key) {
+            return;
+          }
+
+          this.cancelBoardCardOverrideCleanup(key);
+
+          this.localBoardCardMoveOverrides[key] = {
+            targetPlayerId: state && state.targetPlayerId ? String(state.targetPlayerId) : null,
+            x: this.isFiniteNumber(state.x) ? state.x : 0,
+            y: this.isFiniteNumber(state.y) ? state.y : 0
+          };
+        },
+        clearBoardCardMoveOverride(cardId) {
+          const key = String(cardId);
+          if (!Object.prototype.hasOwnProperty.call(this.localBoardCardMoveOverrides, key)) {
+            return;
+          }
+
+          delete this.localBoardCardMoveOverrides[key];
+        },
+        cancelBoardCardOverrideCleanup(cardId) {
+          const key = String(cardId);
+          const timerId = this.boardOverrideCleanupTimers[key];
+
+          if (timerId) {
+            clearTimeout(timerId);
+            delete this.boardOverrideCleanupTimers[key];
+          }
+        },
+        queueBoardCardOverrideCleanup(cardId) {
+          const key = String(cardId);
+          if (!key) {
+            return;
+          }
+
+          this.cancelBoardCardOverrideCleanup(key);
+          this.boardOverrideCleanupTimers[key] = setTimeout(() => {
+            if (this.dragState && String(this.dragState.cardId) === key) {
+              return;
+            }
+
+            this.clearBoardCardMoveOverride(key);
+            delete this.boardOverrideCleanupTimers[key];
+          }, 500);
+        },
+        clearAllBoardOverrideTimers() {
+          Object.keys(this.boardOverrideCleanupTimers).forEach((cardId) => {
+            clearTimeout(this.boardOverrideCleanupTimers[cardId]);
+          });
+
+          this.boardOverrideCleanupTimers = {};
+        },
+        getBoardElements() {
+          if (!this.$el) {
+            return [];
+          }
+
+          const elements = Array.from(this.$el.querySelectorAll('.player-board[data-player-id]'));
+
+          return elements.map((element) => ({
+            element,
+            playerId: element.dataset.playerId ? String(element.dataset.playerId) : '',
+            boardSide: element.dataset.boardSide || 'bottom'
+          }));
+        },
+        getBoardElementByPlayerId(playerId) {
+          const safePlayerId = String(playerId);
+          return this.getBoardElements().find((entry) => entry.playerId === safePlayerId) || null;
+        },
+        findBoardUnderPointer(clientX, clientY) {
+          const boardEntries = this.getBoardElements();
+
+          for (const entry of boardEntries) {
+            const rect = entry.element.getBoundingClientRect();
+            if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
+              return entry;
+            }
+          }
+
+          return null;
+        },
+        toBoardCoordinates(event, boardElement, boardSide = 'bottom') {
+          if (!event || !boardElement || !(boardElement instanceof HTMLElement)) {
+            return null;
+          }
+
+          const rect = boardElement.getBoundingClientRect();
+          if (rect.width <= 0 || rect.height <= 0) {
+            return null;
+          }
+
+          const boardSpace = getBoardSpaceBySide(boardSide);
+
+          const x = ((event.clientX - rect.left) / rect.width) * boardSpace.width;
+          const y = ((event.clientY - rect.top) / rect.height) * boardSpace.height;
+
+          return this.clampPointerCoordinatesForSide(x, y, boardSide);
+        },
+        attachBoardDragListeners() {
+          window.addEventListener('pointermove', this.onWindowPointerMove, { passive: false });
+          window.addEventListener('pointerup', this.onWindowPointerUp, { passive: false });
+          window.addEventListener('pointercancel', this.onWindowPointerUp, { passive: false });
+        },
+        detachBoardDragListeners() {
+          window.removeEventListener('pointermove', this.onWindowPointerMove);
+          window.removeEventListener('pointerup', this.onWindowPointerUp);
+          window.removeEventListener('pointercancel', this.onWindowPointerUp);
+        },
+        onBoardCardPointerDown(payload = {}) {
+          const event = payload.event;
+          const card = payload.card;
+          const boardPlayerId = payload.boardPlayerId ? String(payload.boardPlayerId) : null;
+
+          if (this.isSpectator || !card || !event || !boardPlayerId) {
+            return;
+          }
+
+          if (event.pointerType !== 'touch' && event.button !== 0) {
+            return;
+          }
+
+          const boardEntry = this.getBoardElementByPlayerId(boardPlayerId);
+          if (!boardEntry) {
+            return;
+          }
+
+          const boardSide = boardEntry.boardSide || 'bottom';
+          const pointerPosition = this.toBoardCoordinates(event, boardEntry.element, boardSide);
+          if (!pointerPosition) {
+            return;
+          }
+
+          event.preventDefault();
+          this.closeContextMenu();
+
+          const fallbackCanonicalFromSide = this.fromSideToCanonicalBoardCoordinates(card.boardPosition, boardSide);
+          const canonicalCardPosition = this.getSanitizedBoardPosition(
+            card.canonicalBoardPosition || fallbackCanonicalFromSide,
+            0
+          );
+          const sideCardPosition = this.fromCanonicalToSideBoardCoordinates(canonicalCardPosition, boardSide);
+          const cardId = String(card.id);
+
+          this.setLocalBoardCardMoveOverride(cardId, {
+            targetPlayerId: boardPlayerId,
+            x: canonicalCardPosition.x,
+            y: canonicalCardPosition.y
+          });
+
+          this.dragState = {
+            pointerId: event.pointerId,
+            cardId,
+            originPlayerId: boardPlayerId,
+            activeTargetPlayerId: boardPlayerId,
+            offsetX: pointerPosition.x - sideCardPosition.x,
+            offsetY: pointerPosition.y - sideCardPosition.y
+          };
+          this.activeDragCardId = cardId;
+
+          this.attachBoardDragListeners();
+        },
+        onWindowPointerMove(event) {
+          if (!this.dragState || event.pointerId !== this.dragState.pointerId) {
+            return;
+          }
+
+          const boardEntry =
+            this.findBoardUnderPointer(event.clientX, event.clientY) ||
+            this.getBoardElementByPlayerId(this.dragState.activeTargetPlayerId || this.dragState.originPlayerId);
+
+          if (!boardEntry) {
+            return;
+          }
+
+          const boardSide = boardEntry.boardSide || 'bottom';
+          const pointerPosition = this.toBoardCoordinates(event, boardEntry.element, boardSide);
+          if (!pointerPosition) {
+            return;
+          }
+
+          event.preventDefault();
+
+          const nextPosition = this.clampBoardCoordinatesForSide(
+            pointerPosition.x - this.dragState.offsetX,
+            pointerPosition.y - this.dragState.offsetY,
+            boardSide
+          );
+          const nextCanonicalPosition = this.fromSideToCanonicalBoardCoordinates(nextPosition, boardSide);
+
+          this.setLocalBoardCardMoveOverride(this.dragState.cardId, {
+            targetPlayerId: boardEntry.playerId,
+            x: nextCanonicalPosition.x,
+            y: nextCanonicalPosition.y
+          });
+
+          this.dragState.activeTargetPlayerId = boardEntry.playerId;
+        },
+        onWindowPointerUp(event) {
+          if (!this.dragState || event.pointerId !== this.dragState.pointerId) {
+            return;
+          }
+
+          event.preventDefault();
+          this.stopBoardDrag(true);
+        },
+        stopBoardDrag(shouldPersist) {
+          if (!this.dragState) {
+            return;
+          }
+
+          const cardId = this.dragState.cardId;
+          const finalState = this.localBoardCardMoveOverrides[cardId] || null;
+
+          this.detachBoardDragListeners();
+          this.dragState = null;
+          this.activeDragCardId = null;
+
+          if (shouldPersist && finalState) {
+            this.$emit('move-board-card', {
+              cardId,
+              targetPlayerId: finalState.targetPlayerId,
+              x: finalState.x,
+              y: finalState.y
+            });
+          }
+
+          this.queueBoardCardOverrideCleanup(cardId);
+        },
+        onGlobalKeyDown(event) {
+          if (!this.dragState || this.isSpectator || !event || typeof event.key !== 'string') {
+            return;
+          }
+
+          if (event.key.toLowerCase() !== 'r') {
+            return;
+          }
+
+          event.preventDefault();
+
+          const cardId = this.dragState.cardId;
+          this.rotateCardLocally(cardId, 90);
+        },
+        rotateCardLocally(cardId, delta) {
+          const key = String(cardId);
+          const currentRotation = this.normalizeBoardRotationDelta(this.localBoardRotationByCardId[key]);
+          const increment = this.isFiniteNumber(delta) ? delta : 0;
+          const nextRotation = this.normalizeBoardRotationDelta(currentRotation + increment);
+
+          this.localBoardRotationByCardId[key] = nextRotation;
+
+          return nextRotation;
+        },
         onCardHover(card) {
           this.hoveredCard = card;
         },
@@ -223,10 +829,19 @@
           }
 
           if (zone === 'board') {
-            if (isOwnCard) {
-              const options = [];
+            if (!card) {
+              return [];
+            }
 
-              if (card && card.type === 'mainhero') {
+            const options = [
+              {
+                label: 'Rotate +90',
+                action: { type: 'rotate-board-card', cardId: card.id }
+              }
+            ];
+
+            if (isOwnCard) {
+              if (card.type === 'MainHero') {
                 options.push({
                   label: 'Return to MainHero Deck',
                   action: { type: 'return-mainhero-to-deck', cardId: card.id }
@@ -238,11 +853,9 @@
                 { label: 'Flip', action: { type: 'flip', cardId: card.id, zone: 'board' } },
                 { label: 'Discard', action: { type: 'discard', cardId: card.id, zone: 'board' } }
               );
-
-              return options;
             }
 
-            return [];
+            return options;
           }
 
           if (zone === 'mainhero-deck') {
@@ -251,14 +864,14 @@
 
           if (zone === 'hero-deck') {
             return [
-              { label: 'Draw', action: { type: 'draw-hero' } },
+              { label: 'Draw DeckCards', action: { type: 'draw-hero' } },
               { label: 'Shuffle', action: { type: 'shuffle-hero' } }
             ];
           }
 
           if (zone === 'monster-deck') {
             return [
-              { label: 'Reveal top card', action: { type: 'reveal-monster' } },
+              { label: 'Reveal top Monsters card', action: { type: 'reveal-monster' } },
               { label: 'Shuffle', action: { type: 'shuffle-monster' } }
             ];
           }
@@ -296,6 +909,9 @@
           switch (action.type) {
             case 'flip':
               this.$emit('flip-card', action.cardId, action.zone);
+              break;
+            case 'rotate-board-card':
+              this.rotateCardLocally(action.cardId, 90);
               break;
             case 'activate':
               this.$emit('request-action', 'ACTIVATE_CARD', {
@@ -432,9 +1048,12 @@
                 :player="topOpponent"
                 :is-local="false"
                 position="top"
+                :board-cards="getBoardCardsForPlayer(topOpponent.id)"
+                :active-drag-card-id="activeDragCardId"
                 @card-hover="onCardHover"
                 @card-unhover="onCardUnhover"
                 @card-rightclick="onCardRightClick"
+                @board-card-pointerdown="onBoardCardPointerDown"
               ></player-zone>
             </div>
 
@@ -444,9 +1063,12 @@
                 :player="leftOpponent"
                 :is-local="false"
                 position="left"
+                :board-cards="getBoardCardsForPlayer(leftOpponent.id)"
+                :active-drag-card-id="activeDragCardId"
                 @card-hover="onCardHover"
                 @card-unhover="onCardUnhover"
                 @card-rightclick="onCardRightClick"
+                @board-card-pointerdown="onBoardCardPointerDown"
               ></player-zone>
             </div>
 
@@ -456,9 +1078,12 @@
                 :player="rightOpponent"
                 :is-local="false"
                 position="right"
+                :board-cards="getBoardCardsForPlayer(rightOpponent.id)"
+                :active-drag-card-id="activeDragCardId"
                 @card-hover="onCardHover"
                 @card-unhover="onCardUnhover"
                 @card-rightclick="onCardRightClick"
+                @board-card-pointerdown="onBoardCardPointerDown"
               ></player-zone>
             </div>
 
@@ -468,9 +1093,12 @@
                 :player="localPlayer"
                 :is-local="!isSpectator"
                 position="bottom"
+                :board-cards="getBoardCardsForPlayer(localPlayer.id)"
+                :active-drag-card-id="activeDragCardId"
                 @card-hover="onCardHover"
                 @card-unhover="onCardUnhover"
                 @card-rightclick="onCardRightClick"
+                @board-card-pointerdown="onBoardCardPointerDown"
               ></player-zone>
             </div>
 
@@ -488,7 +1116,10 @@
             </div>
           </section>
 
-          <focus-preview :card="hoveredCard"></focus-preview>
+          <focus-preview
+            :card="hoveredCard"
+            :centered="showDiscardModal || showMainHeroModal"
+          ></focus-preview>
           <event-log :entries="eventLogEntries" :visible="showEventLog"></event-log>
           <restricted-log :entries="restrictedLogEntries" :visible="showRestrictedLog"></restricted-log>
 
@@ -533,6 +1164,8 @@
                     :card="{ ...card, isFaceUp: true }"
                     zone="mainhero-deck"
                     :is-own="false"
+                    @hover="onCardHover"
+                    @unhover="onCardUnhover"
                   ></card-component>
 
                   <button
@@ -573,6 +1206,8 @@
                     :card="{ ...card, isFaceUp: true }"
                     zone="discard"
                     :is-own="false"
+                    @hover="onCardHover"
+                    @unhover="onCardUnhover"
                   ></card-component>
 
                   <button

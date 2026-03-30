@@ -10,6 +10,7 @@ class Card {
     this.path = path;
     this.isFaceUp = false;
     this.ownerId = null;
+    this.boardPosition = null;
   }
 }
 

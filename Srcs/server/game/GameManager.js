@@ -11,9 +11,21 @@ const RestrictedLog = require('./RestrictedLog');
 
 const DISCONNECTED_TTL_MS = 10 * 60 * 1000;
 const DISCONNECTED_CLEANUP_INTERVAL_MS = 60 * 1000;
+const BOARD_SPACE_WIDTH = 340;
+const BOARD_SPACE_HEIGHT = 220;
+const BOARD_CARD_WIDTH = 80;
+const BOARD_CARD_HEIGHT = 112;
 
 function deepClone(value) {
   return JSON.parse(JSON.stringify(value));
+}
+
+function isFiniteNumber(value) {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
 }
 
 function toNicknameKey(nickname) {
@@ -129,20 +141,20 @@ class GameManager {
     }));
 
     const heroCards = this.rawCards
-      .filter((card) => card.type === 'hero')
+      .filter((card) => card.type === 'DeckCards')
       .map((card) => this.createCard(card));
 
     const mainHeroCards = this.rawCards
-      .filter((card) => card.type === 'mainhero')
+      .filter((card) => card.type === 'MainHero')
       .map((card) => this.createCard(card));
 
     const monsterCards = this.rawCards
-      .filter((card) => card.type === 'monster')
+      .filter((card) => card.type === 'Monsters')
       .map((card) => this.createCard(card));
 
-    const heroDeck = new Deck('hero', heroCards);
-    const mainHeroDeck = new Deck('mainhero', mainHeroCards);
-    const monsterDeck = new Deck('monster', monsterCards);
+    const heroDeck = new Deck('DeckCards', heroCards);
+    const mainHeroDeck = new Deck('MainHero', mainHeroCards);
+    const monsterDeck = new Deck('Monsters', monsterCards);
     heroDeck.shuffle();
     mainHeroDeck.shuffle();
     monsterDeck.shuffle();
@@ -405,13 +417,192 @@ class GameManager {
 
   createCard(rawCard) {
     const card = new Card(rawCard.id, rawCard.name, rawCard.type, rawCard.path);
+    const bounds = this.getBoardBounds();
+
     card.isFaceUp = Boolean(rawCard.isFaceUp);
     card.ownerId = rawCard.ownerId || null;
+    card.boardPosition =
+      rawCard &&
+      rawCard.boardPosition &&
+      isFiniteNumber(rawCard.boardPosition.x) &&
+      isFiniteNumber(rawCard.boardPosition.y)
+        ? {
+            x: clamp(rawCard.boardPosition.x, bounds.minX, bounds.maxX),
+            y: clamp(rawCard.boardPosition.y, bounds.minY, bounds.maxY)
+          }
+        : null;
+
     return card;
   }
 
+  getBoardBounds() {
+    return {
+      minX: 0,
+      minY: 0,
+      maxX: BOARD_SPACE_WIDTH - BOARD_CARD_WIDTH,
+      maxY: BOARD_SPACE_HEIGHT - BOARD_CARD_HEIGHT
+    };
+  }
+
+  getBoardAnchorForPlayer(playerIndex) {
+    const safeIndex = Number.isInteger(playerIndex) ? Math.abs(playerIndex) : 0;
+
+    return {
+      x: 12 + (safeIndex % 2) * 8,
+      y: 12 + (safeIndex % 3) * 6
+    };
+  }
+
+  buildDefaultBoardPosition(playerIndex, cardIndex) {
+    const safeCardIndex = Number.isInteger(cardIndex) && cardIndex >= 0 ? cardIndex : 0;
+    const anchor = this.getBoardAnchorForPlayer(playerIndex);
+    const bounds = this.getBoardBounds();
+
+    const x = anchor.x + (safeCardIndex % 5) * 26;
+    const y = anchor.y + Math.floor(safeCardIndex / 5) * 28;
+
+    return {
+      x: clamp(x, bounds.minX, bounds.maxX),
+      y: clamp(y, bounds.minY, bounds.maxY)
+    };
+  }
+
+  ensureBoardCardLayout(card, playerIndex, cardIndex) {
+    if (!card || typeof card !== 'object') {
+      return;
+    }
+
+    const bounds = this.getBoardBounds();
+    const boardPosition = card.boardPosition;
+
+    if (
+      boardPosition &&
+      typeof boardPosition === 'object' &&
+      isFiniteNumber(boardPosition.x) &&
+      isFiniteNumber(boardPosition.y)
+    ) {
+      card.boardPosition = {
+        x: clamp(boardPosition.x, bounds.minX, bounds.maxX),
+        y: clamp(boardPosition.y, bounds.minY, bounds.maxY)
+      };
+    } else {
+      card.boardPosition = this.buildDefaultBoardPosition(playerIndex, cardIndex);
+    }
+  }
+
+  clearBoardLayoutMetadata(card) {
+    if (!card || typeof card !== 'object') {
+      return;
+    }
+
+    delete card.boardPosition;
+  }
+
+  addCardToBoard(player, card) {
+    if (!player || !card) {
+      return;
+    }
+
+    if (!Array.isArray(player.board)) {
+      player.board = [];
+    }
+
+    player.board.push(card);
+
+    const playerIndex = this.state.players.findIndex((entry) => entry && entry.id === player.id);
+    this.ensureBoardCardLayout(card, playerIndex, player.board.length - 1);
+  }
+
+  findBoardCard(cardId) {
+    if (cardId === undefined || cardId === null || !Array.isArray(this.state.players)) {
+      return null;
+    }
+
+    for (let playerIndex = 0; playerIndex < this.state.players.length; playerIndex += 1) {
+      const player = this.state.players[playerIndex];
+      const board = Array.isArray(player.board) ? player.board : [];
+
+      for (let cardIndex = 0; cardIndex < board.length; cardIndex += 1) {
+        const card = board[cardIndex];
+
+        if (card && String(card.id) === String(cardId)) {
+          return {
+            player,
+            playerIndex,
+            card,
+            cardIndex
+          };
+        }
+      }
+    }
+
+    return null;
+  }
+
+  moveBoardCard({ cardId, targetPlayerId, x, y } = {}) {
+    if (cardId === undefined || cardId === null) {
+      return false;
+    }
+
+    if (!isFiniteNumber(x) || !isFiniteNumber(y)) {
+      return false;
+    }
+
+    const located = this.findBoardCard(cardId);
+    if (!located) {
+      return false;
+    }
+
+    const sourcePlayer = located.player;
+    const sourcePlayerIndex = located.playerIndex;
+    const sourceBoard = Array.isArray(sourcePlayer.board) ? sourcePlayer.board : [];
+    const resolvedTargetPlayerId =
+      targetPlayerId === undefined || targetPlayerId === null ? sourcePlayer.id : targetPlayerId;
+    const targetPlayer = this.findPlayerById(resolvedTargetPlayerId);
+
+    if (!targetPlayer) {
+      return false;
+    }
+
+    const targetPlayerIndex = this.state.players.findIndex(
+      (entry) => entry && String(entry.id) === String(targetPlayer.id)
+    );
+
+    this.ensureBoardCardLayout(located.card, sourcePlayerIndex, located.cardIndex);
+
+    const bounds = this.getBoardBounds();
+    const nextPosition = {
+      x: clamp(x, bounds.minX, bounds.maxX),
+      y: clamp(y, bounds.minY, bounds.maxY)
+    };
+
+    if (String(sourcePlayer.id) !== String(targetPlayer.id)) {
+      const [movedCard] = sourceBoard.splice(located.cardIndex, 1);
+      if (!movedCard) {
+        return false;
+      }
+
+      movedCard.ownerId = targetPlayer.id;
+      movedCard.boardPosition = nextPosition;
+
+      if (!Array.isArray(targetPlayer.board)) {
+        targetPlayer.board = [];
+      }
+
+      targetPlayer.board.push(movedCard);
+      this.ensureBoardCardLayout(movedCard, targetPlayerIndex, targetPlayer.board.length - 1);
+      movedCard.boardPosition = nextPosition;
+
+      return true;
+    }
+
+    located.card.boardPosition = nextPosition;
+
+    return true;
+  }
+
   findPlayerById(playerId) {
-    return this.state.players.find((player) => player.id === playerId);
+    return this.state.players.find((player) => String(player.id) === String(playerId));
   }
 
   markDisconnected(player) {
@@ -489,17 +680,17 @@ class GameManager {
 
     switch (type) {
       case 'DRAW_HERO':
-        return 'drew from Hero Deck';
+        return 'drew from DeckCards pile';
       case 'TAKE_MAIN_HERO_TO_BOARD':
         return `took MainHero ${safePayload.cardId || ''} to board`.trim();
       case 'RETURN_MAIN_HERO_TO_DECK':
         return `returned MainHero ${safePayload.cardId || ''} to MainHero Deck`.trim();
       case 'REVEAL_MONSTER':
-        return 'revealed top Monster card';
+        return 'revealed top Monsters card';
       case 'TAKE_MONSTER':
-        return `took Monster ${safePayload.cardId || ''}`.trim();
+        return `took Monsters ${safePayload.cardId || ''}`.trim();
       case 'RETURN_ACTIVE_MONSTER_TO_BOTTOM':
-        return `returned active Monster ${safePayload.cardId || ''} to bottom deck`.trim();
+        return `returned active Monsters ${safePayload.cardId || ''} to bottom deck`.trim();
       case 'TAKE_FROM_OPPONENT':
         return `took card ${safePayload.cardId || ''} from opponent ${
           safePayload.fromPlayerId || safePayload.targetPlayerId || ''
@@ -565,7 +756,7 @@ class GameManager {
 
     takenCard.ownerId = requester.id;
     takenCard.isFaceUp = true;
-    requester.board.push(takenCard);
+    this.addCardToBoard(requester, takenCard);
   }
 
   handleReturnMainHeroToDeck(action) {
@@ -592,7 +783,7 @@ class GameManager {
     }
 
     const cardIndex = board.findIndex(
-      (card) => card && card.type === 'mainhero' && String(card.id) === String(cardId)
+      (card) => card && card.type === 'MainHero' && String(card.id) === String(cardId)
     );
     if (cardIndex === -1) {
       return;
@@ -603,6 +794,7 @@ class GameManager {
       return;
     }
 
+    this.clearBoardLayoutMetadata(returnedCard);
     returnedCard.ownerId = null;
     returnedCard.isFaceUp = false;
     mainHeroDeck.push(returnedCard);
@@ -646,7 +838,7 @@ class GameManager {
     const [takenMonster] = this.state.activeMonsters.splice(slotIndex, 1, null);
     takenMonster.ownerId = player.id;
     takenMonster.isFaceUp = true;
-    player.board.push(takenMonster);
+    this.addCardToBoard(player, takenMonster);
   }
 
   handleReturnActiveMonsterToBottom(action) {
@@ -750,6 +942,7 @@ class GameManager {
 
     const zonesToSearch = zone === 'hand' || zone === 'board' ? [zone] : ['hand', 'board'];
     let discardedCard = null;
+    let discardedFromZone = null;
 
     for (const zoneName of zonesToSearch) {
       const cardArray = player[zoneName];
@@ -769,11 +962,16 @@ class GameManager {
       }
 
       [discardedCard] = cardArray.splice(cardIndex, 1);
+      discardedFromZone = zoneName;
       break;
     }
 
     if (!discardedCard) {
       return;
+    }
+
+    if (discardedFromZone === 'board') {
+      this.clearBoardLayoutMetadata(discardedCard);
     }
 
     discardedCard.ownerId = null;
@@ -811,7 +1009,7 @@ class GameManager {
     }
 
     activatedCard.ownerId = player.id;
-    player.board.push(activatedCard);
+    this.addCardToBoard(player, activatedCard);
   }
 
   handleReturnCardToHand(action) {
@@ -843,6 +1041,7 @@ class GameManager {
       return;
     }
 
+    this.clearBoardLayoutMetadata(returnedCard);
     returnedCard.ownerId = player.id;
     player.hand.push(returnedCard);
   }

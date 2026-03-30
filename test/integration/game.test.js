@@ -62,6 +62,27 @@ function waitForCondition(check, timeoutMs = 3000) {
   });
 }
 
+function waitForNoEvent(socket, eventName, timeoutMs = 350, filter = null) {
+  return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      socket.off(eventName, onEvent);
+      resolve();
+    }, timeoutMs);
+
+    function onEvent(payload) {
+      if (typeof filter === 'function' && !filter(payload)) {
+        return;
+      }
+
+      clearTimeout(timeoutId);
+      socket.off(eventName, onEvent);
+      reject(new Error(`Unexpected ${eventName} received`));
+    }
+
+    socket.on(eventName, onEvent);
+  });
+}
+
 function buildSharedState(ioInstance) {
   GameManager.instance = null;
 
@@ -128,6 +149,23 @@ async function joinAndStartGame() {
     playerAId: startA.yourPlayerId,
     playerBId: startB.yourPlayerId
   };
+}
+
+function findPlayerState(state, playerId) {
+  if (!state || !Array.isArray(state.players)) {
+    return null;
+  }
+
+  return state.players.find((player) => String(player.id) === String(playerId)) || null;
+}
+
+function findBoardCard(state, playerId, cardId) {
+  const player = findPlayerState(state, playerId);
+  if (!player || !Array.isArray(player.board)) {
+    return null;
+  }
+
+  return player.board.find((card) => String(card.id) === String(cardId)) || null;
 }
 
 beforeAll((done) => {
@@ -367,6 +405,187 @@ describe('Game integration', () => {
 
     expect(localAfterReturn.hand.some((card) => String(card.id) === String(drawnCard.id))).toBe(true);
     expect(localAfterReturn.board.some((card) => String(card.id) === String(drawnCard.id))).toBe(false);
+  });
+
+  test('move_board_card syncs position and supports cross-board transfer by non-owner', async () => {
+    const { playerA, playerB, playerAId, playerBId } = await joinAndStartGame();
+
+    sharedState.gameManager.state.approvalMode = false;
+
+    const drawnStatePromise = waitForEvent(playerA, 'state_update', 4000, (state) => {
+      const local = findPlayerState(state, playerAId);
+      return Boolean(local && Array.isArray(local.hand) && local.hand.length > 0);
+    });
+
+    playerA.emit('request_action', { type: 'DRAW_HERO', payload: {} });
+
+    const drawnState = await drawnStatePromise;
+    const localAfterDraw = findPlayerState(drawnState, playerAId);
+    const drawnCard = localAfterDraw.hand[0];
+
+    const activatedStatePromiseA = waitForEvent(playerA, 'state_update', 4000, (state) => {
+      return Boolean(findBoardCard(state, playerAId, drawnCard.id));
+    });
+    const activatedStatePromiseB = waitForEvent(playerB, 'state_update', 4000, (state) => {
+      return Boolean(findBoardCard(state, playerAId, drawnCard.id));
+    });
+
+    playerA.emit('request_action', {
+      type: 'ACTIVATE_CARD',
+      payload: { cardId: drawnCard.id }
+    });
+
+    await activatedStatePromiseA;
+    await activatedStatePromiseB;
+
+    const movedByAStatePromiseA = waitForEvent(playerA, 'state_update', 4000, (state) => {
+      const boardCard = findBoardCard(state, playerAId, drawnCard.id);
+      return Boolean(
+        boardCard &&
+          boardCard.boardPosition &&
+          boardCard.boardPosition.x === 240 &&
+          boardCard.boardPosition.y === 108
+      );
+    });
+    const movedByAStatePromiseB = waitForEvent(playerB, 'state_update', 4000, (state) => {
+      const boardCard = findBoardCard(state, playerAId, drawnCard.id);
+      return Boolean(
+        boardCard &&
+          boardCard.boardPosition &&
+          boardCard.boardPosition.x === 240 &&
+          boardCard.boardPosition.y === 108
+      );
+    });
+
+    playerA.emit('move_board_card', {
+      cardId: drawnCard.id,
+      x: 240,
+      y: 150
+    });
+
+    await movedByAStatePromiseA;
+    const movedByAStateB = await movedByAStatePromiseB;
+    expect(findBoardCard(movedByAStateB, playerAId, drawnCard.id).boardPosition).toEqual({
+      x: 240,
+      y: 108
+    });
+
+    const movedByBStatePromiseA = waitForEvent(playerA, 'state_update', 4000, (state) => {
+      const boardCard = findBoardCard(state, playerBId, drawnCard.id);
+      return Boolean(
+        boardCard &&
+          boardCard.boardPosition &&
+          boardCard.boardPosition.x === 260 &&
+          boardCard.boardPosition.y === 108 &&
+          boardCard.ownerId === playerBId
+      );
+    });
+    const movedByBStatePromiseB = waitForEvent(playerB, 'state_update', 4000, (state) => {
+      const boardCard = findBoardCard(state, playerBId, drawnCard.id);
+      return Boolean(
+        boardCard &&
+          boardCard.boardPosition &&
+          boardCard.boardPosition.x === 260 &&
+          boardCard.boardPosition.y === 108 &&
+          boardCard.ownerId === playerBId
+      );
+    });
+
+    playerB.emit('move_board_card', {
+      cardId: drawnCard.id,
+      targetPlayerId: playerBId,
+      x: 999,
+      y: 999
+    });
+
+    const movedByBA = await movedByBStatePromiseA;
+    const movedByBB = await movedByBStatePromiseB;
+
+    expect(findBoardCard(movedByBA, playerAId, drawnCard.id)).toBeNull();
+    expect(findBoardCard(movedByBA, playerBId, drawnCard.id).boardPosition).toEqual({ x: 260, y: 108 });
+    expect(findBoardCard(movedByBB, playerBId, drawnCard.id).ownerId).toBe(playerBId);
+  });
+
+  test('rotate_board_card is deprecated and does not change server state', async () => {
+    const { playerA, playerAId } = await joinAndStartGame();
+
+    sharedState.gameManager.state.approvalMode = false;
+
+    const drawnStatePromise = waitForEvent(playerA, 'state_update', 4000, (state) => {
+      const local = findPlayerState(state, playerAId);
+      return Boolean(local && Array.isArray(local.hand) && local.hand.length > 0);
+    });
+
+    playerA.emit('request_action', { type: 'DRAW_HERO', payload: {} });
+
+    const drawnState = await drawnStatePromise;
+    const localAfterDraw = findPlayerState(drawnState, playerAId);
+    const drawnCard = localAfterDraw.hand[0];
+
+    const activatedStatePromise = waitForEvent(playerA, 'state_update', 4000, (state) => {
+      return Boolean(findBoardCard(state, playerAId, drawnCard.id));
+    });
+
+    playerA.emit('request_action', {
+      type: 'ACTIVATE_CARD',
+      payload: { cardId: drawnCard.id }
+    });
+
+    await activatedStatePromise;
+
+    const stateBeforeRotate = JSON.stringify(sharedState.gameManager.getState());
+    const noStateUpdatePromise = waitForNoEvent(playerA, 'state_update', 300);
+
+    playerA.emit('rotate_board_card', {
+      cardId: drawnCard.id,
+      delta: 90
+    });
+
+    await noStateUpdatePromise;
+
+    const stateAfterRotate = JSON.stringify(sharedState.gameManager.getState());
+    expect(stateAfterRotate).toBe(stateBeforeRotate);
+  });
+
+  test('spectator cannot move or rotate board cards', async () => {
+    await joinAndStartGame();
+
+    const spectator = await createClient();
+    const spectatorJoinedPromise = waitForEvent(spectator, 'spectator_joined', 4000);
+
+    spectator.emit('join_spectator', { displayName: 'Watcher' });
+    await spectatorJoinedPromise;
+
+    const moveErrorPromise = waitForEvent(
+      spectator,
+      'error',
+      4000,
+      (payload) => payload && /Spectators cannot perform actions\./i.test(payload.message)
+    );
+
+    spectator.emit('move_board_card', {
+      cardId: 'missing-card',
+      x: 100,
+      y: 100
+    });
+
+    const moveErrorPayload = await moveErrorPromise;
+    expect(moveErrorPayload.message).toMatch(/Spectators cannot perform actions\./i);
+
+    const rotateErrorPromise = waitForEvent(
+      spectator,
+      'error',
+      4000,
+      (payload) => payload && /Spectators cannot perform actions\./i.test(payload.message)
+    );
+
+    spectator.emit('rotate_board_card', {
+      cardId: 'missing-card',
+      delta: 90
+    });
+
+    const rotateErrorPayload = await rotateErrorPromise;
+    expect(rotateErrorPayload.message).toMatch(/Spectators cannot perform actions\./i);
   });
 
   test('spectator cannot request TAKE_FROM_DISCARD action', async () => {

@@ -7,11 +7,11 @@ const Player = require('../../Srcs/server/models/Player');
 
 function buildCards() {
   return [
-    { id: 1, name: 'Hero 1', type: 'hero', path: '/Assets/Cards/Heroes/h1.png' },
-    { id: 2, name: 'Hero 2', type: 'hero', path: '/Assets/Cards/Heroes/h2.png' },
-    { id: 3, name: 'Monster 1', type: 'monster', path: '/Assets/Cards/Monsters/m1.png' },
-    { id: 4, name: 'Monster 2', type: 'monster', path: '/Assets/Cards/Monsters/m2.png' },
-    { id: 5, name: 'Main Hero 1', type: 'mainhero', path: '/Assets/Cards/MainHeroes/mh1.png' }
+    { id: 1, name: 'Hero 1', type: 'DeckCards', path: '/Assets/Cards/Deck/h1.png' },
+    { id: 2, name: 'Hero 2', type: 'DeckCards', path: '/Assets/Cards/Deck/h2.png' },
+    { id: 3, name: 'Monster 1', type: 'Monsters', path: '/Assets/Cards/Monsters/m1.png' },
+    { id: 4, name: 'Monster 2', type: 'Monsters', path: '/Assets/Cards/Monsters/m2.png' },
+    { id: 5, name: 'Main Hero 1', type: 'MainHero', path: '/Assets/Cards/Heroes/mh1.png' }
   ];
 }
 
@@ -49,7 +49,7 @@ describe('GameManager', () => {
     manager.state.players[1].hand.push({
       id: 101,
       name: 'Secret Hero',
-      type: 'hero',
+      type: 'DeckCards',
       path: '/secret.png',
       isFaceUp: false,
       ownerId: 'p2'
@@ -78,7 +78,7 @@ describe('GameManager', () => {
     manager.state.players[0].hand.push({
       id: 202,
       name: 'Visible Hero',
-      type: 'hero',
+      type: 'DeckCards',
       path: '/visible.png',
       isFaceUp: false,
       ownerId: 'p1'
@@ -137,9 +137,9 @@ describe('GameManager', () => {
     manager.startGame(players);
 
     manager.state.discardPile = [
-      { id: 'd1', name: 'Discard 1', type: 'hero', path: '/d1.png', isFaceUp: true, ownerId: null },
-      { id: 'd2', name: 'Discard 2', type: 'hero', path: '/d2.png', isFaceUp: true, ownerId: null },
-      { id: 'd3', name: 'Discard 3', type: 'hero', path: '/d3.png', isFaceUp: true, ownerId: null }
+      { id: 'd1', name: 'Discard 1', type: 'DeckCards', path: '/d1.png', isFaceUp: true, ownerId: null },
+      { id: 'd2', name: 'Discard 2', type: 'DeckCards', path: '/d2.png', isFaceUp: true, ownerId: null },
+      { id: 'd3', name: 'Discard 3', type: 'DeckCards', path: '/d3.png', isFaceUp: true, ownerId: null }
     ];
 
     manager.executeAction(
@@ -170,7 +170,7 @@ describe('GameManager', () => {
     manager.startGame(players);
 
     manager.state.discardPile = [
-      { id: 'd1', name: 'Discard 1', type: 'hero', path: '/d1.png', isFaceUp: true, ownerId: null }
+      { id: 'd1', name: 'Discard 1', type: 'DeckCards', path: '/d1.png', isFaceUp: true, ownerId: null }
     ];
 
     const discardBefore = manager.state.discardPile.map((card) => card.id);
@@ -231,16 +231,16 @@ describe('GameManager', () => {
       {
         id: 'mh-1',
         name: 'MainHero 1',
-        type: 'mainhero',
-        path: '/Assets/Cards/MainHeroes/mh-1.png',
+        type: 'MainHero',
+        path: '/Assets/Cards/Heroes/mh-1.png',
         isFaceUp: false,
         ownerId: null
       },
       {
         id: 'mh-2',
         name: 'MainHero 2',
-        type: 'mainhero',
-        path: '/Assets/Cards/MainHeroes/mh-2.png',
+        type: 'MainHero',
+        path: '/Assets/Cards/Heroes/mh-2.png',
         isFaceUp: false,
         ownerId: null
       }
@@ -262,7 +262,7 @@ describe('GameManager', () => {
 
     expect(manager.state.mainHeroDeck.map((card) => String(card.id))).toEqual(['mh-1']);
     expect(takenCard.id).toBe('mh-2');
-    expect(takenCard.type).toBe('mainhero');
+    expect(takenCard.type).toBe('MainHero');
     expect(takenCard.ownerId).toBe('p1');
     expect(takenCard.isFaceUp).toBe(true);
   });
@@ -278,8 +278,8 @@ describe('GameManager', () => {
       {
         id: 'mh-10',
         name: 'MainHero 10',
-        type: 'mainhero',
-        path: '/Assets/Cards/MainHeroes/mh-10.png',
+        type: 'MainHero',
+        path: '/Assets/Cards/Heroes/mh-10.png',
         isFaceUp: false,
         ownerId: null
       }
@@ -287,7 +287,7 @@ describe('GameManager', () => {
 
     const requester = manager.state.players.find((player) => player.id === 'p1');
     requester.board = [
-      { id: 'b1', name: 'Board Hero', type: 'hero', path: '/b1.png', isFaceUp: true, ownerId: 'p1' }
+      { id: 'b1', name: 'Board Hero', type: 'DeckCards', path: '/b1.png', isFaceUp: true, ownerId: 'p1' }
     ];
 
     const deckBefore = JSON.stringify(manager.state.mainHeroDeck);
@@ -319,8 +319,8 @@ describe('GameManager', () => {
       {
         id: 'deck-mh-1',
         name: 'Deck MainHero 1',
-        type: 'mainhero',
-        path: '/Assets/Cards/MainHeroes/deck-mh-1.png',
+        type: 'MainHero',
+        path: '/Assets/Cards/Heroes/deck-mh-1.png',
         isFaceUp: false,
         ownerId: null
       }
@@ -331,12 +331,12 @@ describe('GameManager', () => {
       {
         id: 'board-mainhero-1',
         name: 'Board MainHero 1',
-        type: 'mainhero',
-        path: '/Assets/Cards/MainHeroes/board-mainhero-1.png',
+        type: 'MainHero',
+        path: '/Assets/Cards/Heroes/board-mainhero-1.png',
         isFaceUp: true,
         ownerId: 'p1'
       },
-      { id: 'b-hero-1', name: 'Board Hero', type: 'hero', path: '/bhero.png', isFaceUp: true, ownerId: 'p1' }
+      { id: 'b-hero-1', name: 'Board Hero', type: 'DeckCards', path: '/bhero.png', isFaceUp: true, ownerId: 'p1' }
     ];
 
     manager.executeAction(
@@ -354,7 +354,7 @@ describe('GameManager', () => {
     expect(manager.state.mainHeroDeck.map((card) => String(card.id))).toEqual(['deck-mh-1', 'board-mainhero-1']);
 
     const returnedCard = manager.state.mainHeroDeck[manager.state.mainHeroDeck.length - 1];
-    expect(returnedCard.type).toBe('mainhero');
+    expect(returnedCard.type).toBe('MainHero');
     expect(returnedCard.ownerId).toBeNull();
     expect(returnedCard.isFaceUp).toBe(false);
   });
@@ -370,8 +370,8 @@ describe('GameManager', () => {
       {
         id: 'deck-mh-5',
         name: 'Deck MainHero 5',
-        type: 'mainhero',
-        path: '/Assets/Cards/MainHeroes/deck-mh-5.png',
+        type: 'MainHero',
+        path: '/Assets/Cards/Heroes/deck-mh-5.png',
         isFaceUp: false,
         ownerId: null
       }
@@ -382,8 +382,8 @@ describe('GameManager', () => {
       {
         id: 'board-mainhero-5',
         name: 'Board MainHero 5',
-        type: 'mainhero',
-        path: '/Assets/Cards/MainHeroes/board-mainhero-5.png',
+        type: 'MainHero',
+        path: '/Assets/Cards/Heroes/board-mainhero-5.png',
         isFaceUp: true,
         ownerId: 'p1'
       }
@@ -415,8 +415,8 @@ describe('GameManager', () => {
     manager.startGame(players);
 
     manager.state.players[0].hand = [
-      { id: 'h1', name: 'Hero A', type: 'hero', path: '/h1.png', isFaceUp: true, ownerId: 'p1' },
-      { id: 'h2', name: 'Hero B', type: 'hero', path: '/h2.png', isFaceUp: true, ownerId: 'p1' }
+      { id: 'h1', name: 'Hero A', type: 'DeckCards', path: '/h1.png', isFaceUp: true, ownerId: 'p1' },
+      { id: 'h2', name: 'Hero B', type: 'DeckCards', path: '/h2.png', isFaceUp: true, ownerId: 'p1' }
     ];
     manager.state.players[0].board = [];
 
@@ -446,10 +446,10 @@ describe('GameManager', () => {
     manager.startGame(players);
 
     manager.state.players[0].hand = [
-      { id: 'h1', name: 'Hero A', type: 'hero', path: '/h1.png', isFaceUp: true, ownerId: 'p1' }
+      { id: 'h1', name: 'Hero A', type: 'DeckCards', path: '/h1.png', isFaceUp: true, ownerId: 'p1' }
     ];
     manager.state.players[0].board = [
-      { id: 'b1', name: 'Board A', type: 'hero', path: '/b1.png', isFaceUp: true, ownerId: 'p1' }
+      { id: 'b1', name: 'Board A', type: 'DeckCards', path: '/b1.png', isFaceUp: true, ownerId: 'p1' }
     ];
 
     manager.executeAction(
@@ -477,11 +477,11 @@ describe('GameManager', () => {
     manager.startGame(players);
 
     manager.state.players[0].hand = [
-      { id: 'h1', name: 'Hero A', type: 'hero', path: '/h1.png', isFaceUp: true, ownerId: 'p1' }
+      { id: 'h1', name: 'Hero A', type: 'DeckCards', path: '/h1.png', isFaceUp: true, ownerId: 'p1' }
     ];
     manager.state.players[0].board = [
-      { id: 'b1', name: 'Board A', type: 'hero', path: '/b1.png', isFaceUp: true, ownerId: 'p1' },
-      { id: 'b2', name: 'Board B', type: 'hero', path: '/b2.png', isFaceUp: true, ownerId: 'p1' }
+      { id: 'b1', name: 'Board A', type: 'DeckCards', path: '/b1.png', isFaceUp: true, ownerId: 'p1' },
+      { id: 'b2', name: 'Board B', type: 'DeckCards', path: '/b2.png', isFaceUp: true, ownerId: 'p1' }
     ];
 
     manager.executeAction(
@@ -510,10 +510,10 @@ describe('GameManager', () => {
     manager.startGame(players);
 
     manager.state.players[0].hand = [
-      { id: 'h1', name: 'Hero A', type: 'hero', path: '/h1.png', isFaceUp: true, ownerId: 'p1' }
+      { id: 'h1', name: 'Hero A', type: 'DeckCards', path: '/h1.png', isFaceUp: true, ownerId: 'p1' }
     ];
     manager.state.players[0].board = [
-      { id: 'b1', name: 'Board A', type: 'hero', path: '/b1.png', isFaceUp: true, ownerId: 'p1' }
+      { id: 'b1', name: 'Board A', type: 'DeckCards', path: '/b1.png', isFaceUp: true, ownerId: 'p1' }
     ];
 
     manager.executeAction(
@@ -541,12 +541,12 @@ describe('GameManager', () => {
     manager.startGame(players);
 
     manager.state.activeMonsters = [
-      { id: 'am-1', name: 'Active 1', type: 'monster', path: '/am1.png', isFaceUp: true, ownerId: 'p1' },
-      { id: 'am-2', name: 'Active 2', type: 'monster', path: '/am2.png', isFaceUp: true, ownerId: null },
+      { id: 'am-1', name: 'Active 1', type: 'Monsters', path: '/am1.png', isFaceUp: true, ownerId: 'p1' },
+      { id: 'am-2', name: 'Active 2', type: 'Monsters', path: '/am2.png', isFaceUp: true, ownerId: null },
       null
     ];
     manager.state.monsterDeck = [
-      { id: 'deck-1', name: 'Deck 1', type: 'monster', path: '/d1.png', isFaceUp: false, ownerId: null }
+      { id: 'deck-1', name: 'Deck 1', type: 'Monsters', path: '/d1.png', isFaceUp: false, ownerId: null }
     ];
 
     manager.executeAction(
@@ -577,12 +577,12 @@ describe('GameManager', () => {
     manager.startGame(players);
 
     manager.state.activeMonsters = [
-      { id: 'am-3', name: 'Active 3', type: 'monster', path: '/am3.png', isFaceUp: true, ownerId: null },
+      { id: 'am-3', name: 'Active 3', type: 'Monsters', path: '/am3.png', isFaceUp: true, ownerId: null },
       null,
       null
     ];
     manager.state.monsterDeck = [
-      { id: 'deck-2', name: 'Deck 2', type: 'monster', path: '/d2.png', isFaceUp: false, ownerId: null }
+      { id: 'deck-2', name: 'Deck 2', type: 'Monsters', path: '/d2.png', isFaceUp: false, ownerId: null }
     ];
 
     const activeBefore = JSON.stringify(manager.state.activeMonsters);
@@ -611,7 +611,7 @@ describe('GameManager', () => {
     manager.startGame(players);
 
     manager.state.activeMonsters = [
-      { id: 'am-4', name: 'Active 4', type: 'monster', path: '/am4.png', isFaceUp: true, ownerId: null },
+      { id: 'am-4', name: 'Active 4', type: 'Monsters', path: '/am4.png', isFaceUp: true, ownerId: null },
       null,
       null
     ];
@@ -644,7 +644,7 @@ describe('GameManager', () => {
 
     manager.state.activeMonsters = [
       null,
-      { id: 'am-5', name: 'Active 5', type: 'monster', path: '/am5.png', isFaceUp: true, ownerId: 'p2' },
+      { id: 'am-5', name: 'Active 5', type: 'Monsters', path: '/am5.png', isFaceUp: true, ownerId: 'p2' },
       null
     ];
     manager.state.monsterDeck = [];
@@ -665,5 +665,118 @@ describe('GameManager', () => {
     expect(manager.state.monsterDeck[0].id).toBe('am-5');
     expect(manager.state.monsterDeck[0].ownerId).toBeNull();
     expect(manager.state.monsterDeck[0].isFaceUp).toBe(false);
+  });
+
+  test('moveBoardCard updates boardPosition for the targeted board card', () => {
+    const io = buildIoMock();
+    const manager = new GameManager(io, buildCards());
+    const players = [new Player('p1', 'Alice', 's1'), new Player('p2', 'Bob', 's2')];
+
+    manager.startGame(players);
+
+    manager.state.players[1].board = [
+      {
+        id: 'board-opponent-1',
+        name: 'Opponent Card',
+        type: 'DeckCards',
+        path: '/opponent.png',
+        isFaceUp: true,
+        ownerId: 'p2'
+      }
+    ];
+
+    const didMove = manager.moveBoardCard({
+      cardId: 'board-opponent-1',
+      x: 250,
+      y: 180
+    });
+
+    expect(didMove).toBe(true);
+    expect(manager.state.players[1].board[0].boardPosition).toEqual({ x: 250, y: 108 });
+    expect(Object.prototype.hasOwnProperty.call(manager.state.players[1].board[0], 'boardRotation')).toBe(false);
+  });
+
+  test('moveBoardCard moves a card across player boards when targetPlayerId is valid', () => {
+    const io = buildIoMock();
+    const manager = new GameManager(io, buildCards());
+    const players = [new Player('p1', 'Alice', 's1'), new Player('p2', 'Bob', 's2')];
+
+    manager.startGame(players);
+
+    manager.state.players[0].board = [
+      {
+        id: 'board-transfer-1',
+        name: 'Transfer Card',
+        type: 'DeckCards',
+        path: '/transfer.png',
+        isFaceUp: true,
+        ownerId: 'p1',
+        boardPosition: { x: 10, y: 20 }
+      }
+    ];
+    manager.state.players[1].board = [];
+
+    const didMove = manager.moveBoardCard({
+      cardId: 'board-transfer-1',
+      targetPlayerId: 'p2',
+      x: 180,
+      y: 66
+    });
+
+    expect(didMove).toBe(true);
+    expect(manager.state.players[0].board).toHaveLength(0);
+    expect(manager.state.players[1].board).toHaveLength(1);
+    expect(manager.state.players[1].board[0].id).toBe('board-transfer-1');
+    expect(manager.state.players[1].board[0].ownerId).toBe('p2');
+    expect(manager.state.players[1].board[0].boardPosition).toEqual({ x: 180, y: 66 });
+    expect(Object.prototype.hasOwnProperty.call(manager.state.players[1].board[0], 'boardRotation')).toBe(false);
+  });
+
+  test('moveBoardCard clamps out-of-range coordinates and ignores invalid target/card', () => {
+    const io = buildIoMock();
+    const manager = new GameManager(io, buildCards());
+    const players = [new Player('p1', 'Alice', 's1'), new Player('p2', 'Bob', 's2')];
+
+    manager.startGame(players);
+
+    manager.state.players[0].board = [
+      {
+        id: 'board-local-1',
+        name: 'Local Card',
+        type: 'DeckCards',
+        path: '/local.png',
+        isFaceUp: true,
+        ownerId: 'p1',
+        boardPosition: { x: 10, y: 20 }
+      }
+    ];
+
+    const didMoveClamped = manager.moveBoardCard({
+      cardId: 'board-local-1',
+      x: 5000,
+      y: -120
+    });
+
+    expect(didMoveClamped).toBe(true);
+    expect(manager.state.players[0].board[0].boardPosition).toEqual({ x: 260, y: 0 });
+
+    const boardBeforeInvalidTarget = JSON.stringify(manager.state.players.map((player) => player.board));
+    const didMoveInvalidTarget = manager.moveBoardCard({
+      cardId: 'board-local-1',
+      targetPlayerId: 'missing-player',
+      x: 100,
+      y: 100
+    });
+
+    expect(didMoveInvalidTarget).toBe(false);
+    expect(JSON.stringify(manager.state.players.map((player) => player.board))).toBe(boardBeforeInvalidTarget);
+
+    const didMoveMissingCard = manager.moveBoardCard({
+      cardId: 'missing-card',
+      x: 100,
+      y: 100
+    });
+
+    expect(didMoveMissingCard).toBe(false);
   });
 });

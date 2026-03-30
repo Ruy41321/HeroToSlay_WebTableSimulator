@@ -18,6 +18,10 @@ function isSupportedZone(zone) {
   return zone === 'hand' || zone === 'board';
 }
 
+function isFiniteNumber(value) {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
 function registerGameHandlers(io, socket, context) {
   socket.on('request_action', ({ type, payload } = {}) => {
     if (socket.isSpectator) {
@@ -94,6 +98,61 @@ function registerGameHandlers(io, socket, context) {
       message: `${player.nickname} flipped a card ${card.isFaceUp ? 'face-up' : 'face-down'}.`,
       timestamp: toTimestamp()
     });
+  });
+
+  socket.on('move_board_card', ({ cardId, targetPlayerId, x, y } = {}) => {
+    if (socket.isSpectator) {
+      socket.emit('error', { message: 'Spectators cannot perform actions.' });
+      return;
+    }
+
+    if (!context.gameInProgress) {
+      emitError(socket, 'Cannot move board cards while no game is running.');
+      return;
+    }
+
+    const requester = findConnectedPlayer(context, socket.id);
+    if (!requester) {
+      emitError(socket, 'Only connected players can move board cards.');
+      return;
+    }
+
+    if (!isFiniteNumber(x) || !isFiniteNumber(y)) {
+      return;
+    }
+
+    const didMove = context.gameManager.moveBoardCard({
+      cardId,
+      x,
+      y,
+      targetPlayerId
+    });
+
+    if (!didMove) {
+      return;
+    }
+
+    context.gameManager.broadcastState();
+  });
+
+  socket.on('rotate_board_card', ({ cardId, rotation, delta } = {}) => {
+    if (socket.isSpectator) {
+      socket.emit('error', { message: 'Spectators cannot perform actions.' });
+      return;
+    }
+
+    if (!context.gameInProgress) {
+      emitError(socket, 'Cannot rotate board cards while no game is running.');
+      return;
+    }
+
+    const requester = findConnectedPlayer(context, socket.id);
+    if (!requester) {
+      emitError(socket, 'Only connected players can rotate board cards.');
+      return;
+    }
+
+    // Rotation is local-only on clients and intentionally not synchronized.
   });
 
   socket.on('view_discard', () => {

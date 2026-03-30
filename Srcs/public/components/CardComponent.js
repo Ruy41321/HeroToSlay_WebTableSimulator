@@ -24,44 +24,50 @@
         resolvedType() {
           if (
             this.card &&
-            (this.card.type === 'hero' || this.card.type === 'monster' || this.card.type === 'mainhero')
+            (this.card.type === 'DeckCards' || this.card.type === 'Monsters' || this.card.type === 'MainHero')
           ) {
             return this.card.type;
           }
 
           if (this.zone === 'monster-deck' || this.zone === 'active-monster') {
-            return 'monster';
+            return 'Monsters';
           }
 
           if (this.zone === 'mainhero-deck') {
-            return 'mainhero';
+            return 'MainHero';
           }
 
-          return 'hero';
+          return 'DeckCards';
         },
         imageSource() {
           if (this.card && this.card.isFaceUp === true && this.card.path) {
             return this.card.path;
           }
 
-          return this.resolvedType === 'monster'
-            ? '/Assets/Cards/monster_card_back.png'
-            : '/Assets/Cards/hero_card_back.png';
+          if (this.resolvedType === 'Monsters') {
+            return '/Assets/Cards/monster_card_back.png';
+          }
+
+          if (this.resolvedType === 'MainHero') {
+            return '/Assets/Cards/main_hero_back.png';
+          }
+
+          return '/Assets/Cards/hero_card_back.png';
         },
         imageAlt() {
           if (this.card && this.card.isFaceUp === true && this.card.name) {
             return this.card.name;
           }
 
-          if (this.resolvedType === 'monster') {
+          if (this.resolvedType === 'Monsters') {
             return 'Face-down monster card';
           }
 
-          if (this.resolvedType === 'mainhero') {
+          if (this.resolvedType === 'MainHero') {
             return 'Face-down main hero card';
           }
 
-          return 'Face-down hero card';
+          return 'Face-down deck card';
         }
       },
       methods: {

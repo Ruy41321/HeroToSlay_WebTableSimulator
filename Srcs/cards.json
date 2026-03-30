@@ -1,236 +1,1238 @@
 [
   {
     "id": 1,
-    "name": "cardDiamonds_10",
-    "path": "/Assets/Cards/Heroes/cardDiamonds_10.png",
-    "type": "hero"
+    "name": "Bardo",
+    "path": "/Assets/Cards/Heroes/Bardo.png",
+    "type": "MainHero"
   },
   {
     "id": 2,
-    "name": "cardDiamonds_2",
-    "path": "/Assets/Cards/Heroes/cardDiamonds_2.png",
-    "type": "hero"
+    "name": "Berserker",
+    "path": "/Assets/Cards/Heroes/Berserker.png",
+    "type": "MainHero"
   },
   {
     "id": 3,
-    "name": "cardDiamonds_3",
-    "path": "/Assets/Cards/Heroes/cardDiamonds_3.png",
-    "type": "hero"
+    "name": "Combattente",
+    "path": "/Assets/Cards/Heroes/Combattente.png",
+    "type": "MainHero"
   },
   {
     "id": 4,
-    "name": "cardDiamonds_4",
-    "path": "/Assets/Cards/Heroes/cardDiamonds_4.png",
-    "type": "hero"
+    "name": "Druido",
+    "path": "/Assets/Cards/Heroes/Druido.png",
+    "type": "MainHero"
   },
   {
     "id": 5,
-    "name": "cardDiamonds_5",
-    "path": "/Assets/Cards/Heroes/cardDiamonds_5.png",
-    "type": "hero"
+    "name": "Guardiano",
+    "path": "/Assets/Cards/Heroes/Guardiano.png",
+    "type": "MainHero"
   },
   {
     "id": 6,
-    "name": "cardDiamonds_6",
-    "path": "/Assets/Cards/Heroes/cardDiamonds_6.png",
-    "type": "hero"
+    "name": "Guerriero",
+    "path": "/Assets/Cards/Heroes/Guerriero.png",
+    "type": "MainHero"
   },
   {
     "id": 7,
-    "name": "cardDiamonds_7",
-    "path": "/Assets/Cards/Heroes/cardDiamonds_7.png",
-    "type": "hero"
+    "name": "Ladro",
+    "path": "/Assets/Cards/Heroes/Ladro.png",
+    "type": "MainHero"
   },
   {
     "id": 8,
-    "name": "cardDiamonds_8",
-    "path": "/Assets/Cards/Heroes/cardDiamonds_8.png",
-    "type": "hero"
+    "name": "Mago",
+    "path": "/Assets/Cards/Heroes/Mago.png",
+    "type": "MainHero"
   },
   {
     "id": 9,
-    "name": "cardDiamonds_9",
-    "path": "/Assets/Cards/Heroes/cardDiamonds_9.png",
-    "type": "hero"
+    "name": "Necromante",
+    "path": "/Assets/Cards/Heroes/Necromante.png",
+    "type": "MainHero"
   },
   {
     "id": 10,
-    "name": "cardDiamonds_A",
-    "path": "/Assets/Cards/Heroes/cardDiamonds_A.png",
-    "type": "hero"
+    "name": "Ranger",
+    "path": "/Assets/Cards/Heroes/Ranger.png",
+    "type": "MainHero"
   },
   {
     "id": 11,
-    "name": "cardDiamonds_J",
-    "path": "/Assets/Cards/Heroes/cardDiamonds_J.png",
-    "type": "hero"
+    "name": "Domitilla Brilla",
+    "path": "/Assets/Cards/Deck/Eroe-Bardo/Domitilla Brilla.png",
+    "type": "DeckCards"
   },
   {
     "id": 12,
-    "name": "cardDiamonds_K",
-    "path": "/Assets/Cards/Heroes/cardDiamonds_K.png",
-    "type": "hero"
+    "name": "Fracasso Pigliatutto",
+    "path": "/Assets/Cards/Deck/Eroe-Bardo/Fracasso Pigliatutto.png",
+    "type": "DeckCards"
   },
   {
     "id": 13,
-    "name": "cardDiamonds_Q",
-    "path": "/Assets/Cards/Heroes/cardDiamonds_Q.png",
-    "type": "hero"
+    "name": "Mielodia",
+    "path": "/Assets/Cards/Deck/Eroe-Bardo/Mielodia.png",
+    "type": "DeckCards"
   },
   {
     "id": 14,
-    "name": "cardHearts_10",
-    "path": "/Assets/Cards/MainHeroes/cardHearts_10.png",
-    "type": "mainhero"
+    "name": "Nello Tamburello",
+    "path": "/Assets/Cards/Deck/Eroe-Bardo/Nello Tamburello.png",
+    "type": "DeckCards"
   },
   {
     "id": 15,
-    "name": "cardHearts_2",
-    "path": "/Assets/Cards/MainHeroes/cardHearts_2.png",
-    "type": "mainhero"
+    "name": "Nocciolina",
+    "path": "/Assets/Cards/Deck/Eroe-Bardo/Nocciolina.png",
+    "type": "DeckCards"
   },
   {
     "id": 16,
-    "name": "cardHearts_3",
-    "path": "/Assets/Cards/MainHeroes/cardHearts_3.png",
-    "type": "mainhero"
+    "name": "Penny Pennichella",
+    "path": "/Assets/Cards/Deck/Eroe-Bardo/Penny Pennichella.png",
+    "type": "DeckCards"
   },
   {
     "id": 17,
-    "name": "cardHearts_4",
-    "path": "/Assets/Cards/MainHeroes/cardHearts_4.png",
-    "type": "mainhero"
+    "name": "Tam Tam",
+    "path": "/Assets/Cards/Deck/Eroe-Bardo/Tam Tam.png",
+    "type": "DeckCards"
   },
   {
     "id": 18,
-    "name": "cardHearts_5",
-    "path": "/Assets/Cards/MainHeroes/cardHearts_5.png",
-    "type": "mainhero"
+    "name": "Truffolotto",
+    "path": "/Assets/Cards/Deck/Eroe-Bardo/Truffolotto.png",
+    "type": "DeckCards"
   },
   {
     "id": 19,
-    "name": "cardHearts_6",
-    "path": "/Assets/Cards/MainHeroes/cardHearts_6.png",
-    "type": "mainhero"
+    "name": "Annihilator",
+    "path": "/Assets/Cards/Deck/Eroe-Berserker/Annihilator.png",
+    "type": "DeckCards"
   },
   {
     "id": 20,
-    "name": "cardHearts_7",
-    "path": "/Assets/Cards/MainHeroes/cardHearts_7.png",
-    "type": "mainhero"
+    "name": "Brawling Spirit",
+    "path": "/Assets/Cards/Deck/Eroe-Berserker/Brawling Spirit.png",
+    "type": "DeckCards"
   },
   {
     "id": 21,
-    "name": "cardHearts_8",
-    "path": "/Assets/Cards/MainHeroes/cardHearts_8.png",
-    "type": "mainhero"
+    "name": "Gruesome Gladiator",
+    "path": "/Assets/Cards/Deck/Eroe-Berserker/Gruesome Gladiator.png",
+    "type": "DeckCards"
   },
   {
     "id": 22,
-    "name": "cardHearts_9",
-    "path": "/Assets/Cards/MainHeroes/cardHearts_9.png",
-    "type": "mainhero"
+    "name": "Meowntain",
+    "path": "/Assets/Cards/Deck/Eroe-Berserker/Meowntain.png",
+    "type": "DeckCards"
   },
   {
     "id": 23,
-    "name": "cardHearts_A",
-    "path": "/Assets/Cards/MainHeroes/cardHearts_A.png",
-    "type": "mainhero"
+    "name": "Rabid Beast",
+    "path": "/Assets/Cards/Deck/Eroe-Berserker/Rabid Beast.png",
+    "type": "DeckCards"
   },
   {
     "id": 24,
-    "name": "cardHearts_J",
-    "path": "/Assets/Cards/MainHeroes/cardHearts_J.png",
-    "type": "mainhero"
+    "name": "Roaryal Guard",
+    "path": "/Assets/Cards/Deck/Eroe-Berserker/Roaryal Guard.png",
+    "type": "DeckCards"
   },
   {
     "id": 25,
-    "name": "cardHearts_K",
-    "path": "/Assets/Cards/MainHeroes/cardHearts_K.png",
-    "type": "mainhero"
+    "name": "Unbridled Fury",
+    "path": "/Assets/Cards/Deck/Eroe-Berserker/Unbridled Fury.png",
+    "type": "DeckCards"
   },
   {
     "id": 26,
-    "name": "cardHearts_Q",
-    "path": "/Assets/Cards/MainHeroes/cardHearts_Q.png",
-    "type": "mainhero"
+    "name": "Vicious Wildcat",
+    "path": "/Assets/Cards/Deck/Eroe-Berserker/Vicious Wildcat.png",
+    "type": "DeckCards"
   },
   {
     "id": 27,
-    "name": "cardClubs_10",
-    "path": "/Assets/Cards/Monsters/cardClubs_10.png",
-    "type": "monster"
+    "name": "Branco Lupino",
+    "path": "/Assets/Cards/Deck/Eroe-Combattente/Branco Lupino.png",
+    "type": "DeckCards"
   },
   {
     "id": 28,
-    "name": "cardClubs_2",
-    "path": "/Assets/Cards/Monsters/cardClubs_2.png",
-    "type": "monster"
+    "name": "Cacciatore Temprato",
+    "path": "/Assets/Cards/Deck/Eroe-Combattente/Cacciatore Temprato.png",
+    "type": "DeckCards"
   },
   {
     "id": 29,
-    "name": "cardClubs_3",
-    "path": "/Assets/Cards/Monsters/cardClubs_3.png",
-    "type": "monster"
+    "name": "Fusto Tenace",
+    "path": "/Assets/Cards/Deck/Eroe-Combattente/Fusto Tenace.png",
+    "type": "DeckCards"
   },
   {
     "id": 30,
-    "name": "cardClubs_4",
-    "path": "/Assets/Cards/Monsters/cardClubs_4.png",
-    "type": "monster"
+    "name": "Lama Accecante",
+    "path": "/Assets/Cards/Deck/Eroe-Combattente/Lama Accecante.png",
+    "type": "DeckCards"
   },
   {
     "id": 31,
-    "name": "cardClubs_5",
-    "path": "/Assets/Cards/Monsters/cardClubs_5.png",
-    "type": "monster"
+    "name": "Morso Critico",
+    "path": "/Assets/Cards/Deck/Eroe-Combattente/Morso Critico.png",
+    "type": "DeckCards"
   },
   {
     "id": 32,
-    "name": "cardClubs_6",
-    "path": "/Assets/Cards/Monsters/cardClubs_6.png",
-    "type": "monster"
+    "name": "Sciacallupo",
+    "path": "/Assets/Cards/Deck/Eroe-Combattente/Sciacallupo.png",
+    "type": "DeckCards"
   },
   {
     "id": 33,
-    "name": "cardClubs_7",
-    "path": "/Assets/Cards/Monsters/cardClubs_7.png",
-    "type": "monster"
+    "name": "Scudo Silente",
+    "path": "/Assets/Cards/Deck/Eroe-Combattente/Scudo Silente.png",
+    "type": "DeckCards"
   },
   {
     "id": 34,
-    "name": "cardClubs_8",
-    "path": "/Assets/Cards/Monsters/cardClubs_8.png",
-    "type": "monster"
+    "name": "Sveltalama",
+    "path": "/Assets/Cards/Deck/Eroe-Combattente/Sveltalama.png",
+    "type": "DeckCards"
   },
   {
     "id": 35,
-    "name": "cardClubs_9",
-    "path": "/Assets/Cards/Monsters/cardClubs_9.png",
-    "type": "monster"
+    "name": "Cervo Custode",
+    "path": "/Assets/Cards/Deck/Eroe-Druido/Cervo Custode.png",
+    "type": "DeckCards"
   },
   {
     "id": 36,
-    "name": "cardClubs_A",
-    "path": "/Assets/Cards/Monsters/cardClubs_A.png",
-    "type": "monster"
+    "name": "Cervo del Malaugurio",
+    "path": "/Assets/Cards/Deck/Eroe-Druido/Cervo del Malaugurio.png",
+    "type": "DeckCards"
   },
   {
     "id": 37,
-    "name": "cardClubs_J",
-    "path": "/Assets/Cards/Monsters/cardClubs_J.png",
-    "type": "monster"
+    "name": "Corna Brillanti",
+    "path": "/Assets/Cards/Deck/Eroe-Druido/Corna Brillanti.png",
+    "type": "DeckCards"
   },
   {
     "id": 38,
-    "name": "cardClubs_K",
-    "path": "/Assets/Cards/Monsters/cardClubs_K.png",
-    "type": "monster"
+    "name": "Dama Daino",
+    "path": "/Assets/Cards/Deck/Eroe-Druido/Dama Daino.png",
+    "type": "DeckCards"
   },
   {
     "id": 39,
-    "name": "cardClubs_Q",
-    "path": "/Assets/Cards/Monsters/cardClubs_Q.png",
-    "type": "monster"
+    "name": "Incantalce",
+    "path": "/Assets/Cards/Deck/Eroe-Druido/Incantalce.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 40,
+    "name": "Paladaino",
+    "path": "/Assets/Cards/Deck/Eroe-Druido/Paladaino.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 41,
+    "name": "Sua Cerbiattosità",
+    "path": "/Assets/Cards/Deck/Eroe-Druido/Sua Cerbiattosità.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 42,
+    "name": "Sua Malvalcità",
+    "path": "/Assets/Cards/Deck/Eroe-Druido/Sua Malvalcità.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 43,
+    "name": "Araldo Baldo",
+    "path": "/Assets/Cards/Deck/Eroe-Guardiano/Araldo Baldo.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 44,
+    "name": "Fulgicorno",
+    "path": "/Assets/Cards/Deck/Eroe-Guardiano/Fulgicorno.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 45,
+    "name": "Lama di Luce",
+    "path": "/Assets/Cards/Deck/Eroe-Guardiano/Lama di Luce.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 46,
+    "name": "Luccichina",
+    "path": "/Assets/Cards/Deck/Eroe-Guardiano/Luccichina.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 47,
+    "name": "Ninna Nenia",
+    "path": "/Assets/Cards/Deck/Eroe-Guardiano/Ninna Nenia.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 48,
+    "name": "Purificacuore",
+    "path": "/Assets/Cards/Deck/Eroe-Guardiano/Purificacuore.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 49,
+    "name": "Saggioscudo",
+    "path": "/Assets/Cards/Deck/Eroe-Guardiano/Saggioscudo.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 50,
+    "name": "Splendore Ardente",
+    "path": "/Assets/Cards/Deck/Eroe-Guardiano/Splendore Ardente.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 51,
+    "name": "Artiglio Scompiglio",
+    "path": "/Assets/Cards/Deck/Eroe-Guerriero/Artiglio Scompiglio.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 52,
+    "name": "Ascia Sfascia",
+    "path": "/Assets/Cards/Deck/Eroe-Guerriero/Ascia Sfascia.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 53,
+    "name": "Barborso",
+    "path": "/Assets/Cards/Deck/Eroe-Guerriero/Barborso.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 54,
+    "name": "Fiammazampa",
+    "path": "/Assets/Cards/Deck/Eroe-Guerriero/Fiammazampa.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 55,
+    "name": "Maglio Polare",
+    "path": "/Assets/Cards/Deck/Eroe-Guerriero/Maglio Polare.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 56,
+    "name": "Pan Chaku",
+    "path": "/Assets/Cards/Deck/Eroe-Guerriero/Pan Chaku.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 57,
+    "name": "Pugno Grugno",
+    "path": "/Assets/Cards/Deck/Eroe-Guerriero/Pugno Grugno.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 58,
+    "name": "Ted il Tosto",
+    "path": "/Assets/Cards/Deck/Eroe-Guerriero/Ted il Tosto.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 59,
+    "name": "Arsenio Gatten",
+    "path": "/Assets/Cards/Deck/Eroe-Ladro/Arsenio Gatten.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 60,
+    "name": "El Puma",
+    "path": "/Assets/Cards/Deck/Eroe-Ladro/El Puma.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 61,
+    "name": "Ezio Miaoditore",
+    "path": "/Assets/Cards/Deck/Eroe-Ladro/Ezio Miaoditore.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 62,
+    "name": "Micio Micio Miao",
+    "path": "/Assets/Cards/Deck/Eroe-Ladro/Micio Micio Miao.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 63,
+    "name": "Ombra Silente",
+    "path": "/Assets/Cards/Deck/Eroe-Ladro/Ombra Silente.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 64,
+    "name": "Rapigatto",
+    "path": "/Assets/Cards/Deck/Eroe-Ladro/Rapigatto.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 65,
+    "name": "Shurigat",
+    "path": "/Assets/Cards/Deck/Eroe-Ladro/Shurigat.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 66,
+    "name": "Zampe di Burro",
+    "path": "/Assets/Cards/Deck/Eroe-Ladro/Zampe di Burro.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 67,
+    "name": "Batuffola",
+    "path": "/Assets/Cards/Deck/Eroe-Mago/Batuffola.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 68,
+    "name": "Brivido",
+    "path": "/Assets/Cards/Deck/Eroe-Mago/Brivido.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 69,
+    "name": "Diana Liana",
+    "path": "/Assets/Cards/Deck/Eroe-Mago/Diana Liana.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 70,
+    "name": "Esmeralda",
+    "path": "/Assets/Cards/Deck/Eroe-Mago/Esmeralda.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 71,
+    "name": "Fierobaffo",
+    "path": "/Assets/Cards/Deck/Eroe-Mago/Fierobaffo.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 72,
+    "name": "Mago Merlepre",
+    "path": "/Assets/Cards/Deck/Eroe-Mago/Mago Merlepre.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 73,
+    "name": "Saetta",
+    "path": "/Assets/Cards/Deck/Eroe-Mago/Saetta.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 74,
+    "name": "Spiralepre",
+    "path": "/Assets/Cards/Deck/Eroe-Mago/Spiralepre.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 75,
+    "name": "Bark Hexer",
+    "path": "/Assets/Cards/Deck/Eroe-Necromante/Bark Hexer.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 76,
+    "name": "Beholden Retriever",
+    "path": "/Assets/Cards/Deck/Eroe-Necromante/Beholden Retriever.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 77,
+    "name": "Bone Collector",
+    "path": "/Assets/Cards/Deck/Eroe-Necromante/Bone Collector.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 78,
+    "name": "Boston Terror",
+    "path": "/Assets/Cards/Deck/Eroe-Necromante/Boston Terror.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 79,
+    "name": "Grim Pupper",
+    "path": "/Assets/Cards/Deck/Eroe-Necromante/Grim Pupper.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 80,
+    "name": "Hollow Husk",
+    "path": "/Assets/Cards/Deck/Eroe-Necromante/Hollow Husk.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 81,
+    "name": "Perfect Vessel",
+    "path": "/Assets/Cards/Deck/Eroe-Necromante/Perfect Vessel.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 82,
+    "name": "Shadow Saint",
+    "path": "/Assets/Cards/Deck/Eroe-Necromante/Shadow Saint.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 83,
+    "name": "Codascaltra",
+    "path": "/Assets/Cards/Deck/Eroe-Ranger/Codascaltra.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 84,
+    "name": "Colpofollepng",
+    "path": "/Assets/Cards/Deck/Eroe-Ranger/Colpofollepng.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 85,
+    "name": "Destro Balestro",
+    "path": "/Assets/Cards/Deck/Eroe-Ranger/Destro Balestro.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 86,
+    "name": "Grigio Solitario",
+    "path": "/Assets/Cards/Deck/Eroe-Ranger/Grigio Solitario.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 87,
+    "name": "Lestolampo",
+    "path": "/Assets/Cards/Deck/Eroe-Ranger/Lestolampo.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 88,
+    "name": "Occhio di Volpe",
+    "path": "/Assets/Cards/Deck/Eroe-Ranger/Occhio di Volpe.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 89,
+    "name": "Uncino",
+    "path": "/Assets/Cards/Deck/Eroe-Ranger/Uncino.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 90,
+    "name": "Vistacuta",
+    "path": "/Assets/Cards/Deck/Eroe-Ranger/Vistacuta.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 91,
+    "name": "Cambiaventi(1)",
+    "path": "/Assets/Cards/Deck/Magie/Cambiaventi(1).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 92,
+    "name": "Cambiaventi(2)",
+    "path": "/Assets/Cards/Deck/Magie/Cambiaventi(2).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 93,
+    "name": "Evocazione del Caduto",
+    "path": "/Assets/Cards/Deck/Magie/Evocazione del Caduto.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 94,
+    "name": "Folata di Vento",
+    "path": "/Assets/Cards/Deck/Magie/Folata di Vento.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 95,
+    "name": "Impulso Magico(1)",
+    "path": "/Assets/Cards/Deck/Magie/Impulso Magico(1).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 96,
+    "name": "Impulso Magico(2)",
+    "path": "/Assets/Cards/Deck/Magie/Impulso Magico(2).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 97,
+    "name": "Incantamento(1)",
+    "path": "/Assets/Cards/Deck/Magie/Incantamento(1).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 98,
+    "name": "Incantamento(2)",
+    "path": "/Assets/Cards/Deck/Magie/Incantamento(2).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 99,
+    "name": "Incantesimo Devastante(1)",
+    "path": "/Assets/Cards/Deck/Magie/Incantesimo Devastante(1).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 100,
+    "name": "Incantesimo Devastante(2)",
+    "path": "/Assets/Cards/Deck/Magie/Incantesimo Devastante(2).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 101,
+    "name": "Lightning Labrys(1)",
+    "path": "/Assets/Cards/Deck/Magie/Lightning Labrys(1).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 102,
+    "name": "Lightning Labrys(2)",
+    "path": "/Assets/Cards/Deck/Magie/Lightning Labrys(2).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 103,
+    "name": "Mass Sacrifice(1)",
+    "path": "/Assets/Cards/Deck/Magie/Mass Sacrifice(1).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 104,
+    "name": "Mass Sacrifice(2)",
+    "path": "/Assets/Cards/Deck/Magie/Mass Sacrifice(2).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 105,
+    "name": "Ricarica Rapida",
+    "path": "/Assets/Cards/Deck/Magie/Ricarica Rapida.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 106,
+    "name": "Richiamo Bestiale",
+    "path": "/Assets/Cards/Deck/Magie/Richiamo Bestiale.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 107,
+    "name": "Scambio Obbligato",
+    "path": "/Assets/Cards/Deck/Magie/Scambio Obbligato.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 108,
+    "name": "Trappola Avvinghiante(1)",
+    "path": "/Assets/Cards/Deck/Magie/Trappola Avvinghiante(1).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 109,
+    "name": "Trappola Avvinghiante(2)",
+    "path": "/Assets/Cards/Deck/Magie/Trappola Avvinghiante(2).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 110,
+    "name": "-4 pesca",
+    "path": "/Assets/Cards/Deck/Modificatori/-4 pesca.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 111,
+    "name": "-4(1)",
+    "path": "/Assets/Cards/Deck/Modificatori/-4(1).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 112,
+    "name": "-4(2)",
+    "path": "/Assets/Cards/Deck/Modificatori/-4(2).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 113,
+    "name": "-4(3)",
+    "path": "/Assets/Cards/Deck/Modificatori/-4(3).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 114,
+    "name": "-4(4)",
+    "path": "/Assets/Cards/Deck/Modificatori/-4(4).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 115,
+    "name": "+1-1 pesca",
+    "path": "/Assets/Cards/Deck/Modificatori/+1-1 pesca.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 116,
+    "name": "+1-3(1)",
+    "path": "/Assets/Cards/Deck/Modificatori/+1-3(1).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 117,
+    "name": "+1-3(2)",
+    "path": "/Assets/Cards/Deck/Modificatori/+1-3(2).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 118,
+    "name": "+1-3(3)",
+    "path": "/Assets/Cards/Deck/Modificatori/+1-3(3).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 119,
+    "name": "+1-3(4)",
+    "path": "/Assets/Cards/Deck/Modificatori/+1-3(4).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 120,
+    "name": "+2-1 pesca",
+    "path": "/Assets/Cards/Deck/Modificatori/+2-1 pesca.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 121,
+    "name": "+2-2 Mostro",
+    "path": "/Assets/Cards/Deck/Modificatori/+2-2 Mostro.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 122,
+    "name": "+3-1(1)",
+    "path": "/Assets/Cards/Deck/Modificatori/+3-1(1).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 123,
+    "name": "+3-1(2)",
+    "path": "/Assets/Cards/Deck/Modificatori/+3-1(2).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 124,
+    "name": "+3-1(3)",
+    "path": "/Assets/Cards/Deck/Modificatori/+3-1(3).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 125,
+    "name": "+3-1(4)",
+    "path": "/Assets/Cards/Deck/Modificatori/+3-1(4).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 126,
+    "name": "+4 pesca",
+    "path": "/Assets/Cards/Deck/Modificatori/+4 pesca.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 127,
+    "name": "+4(1)",
+    "path": "/Assets/Cards/Deck/Modificatori/+4(1).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 128,
+    "name": "+4(2)",
+    "path": "/Assets/Cards/Deck/Modificatori/+4(2).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 129,
+    "name": "+4(3)",
+    "path": "/Assets/Cards/Deck/Modificatori/+4(3).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 130,
+    "name": "+4(4)",
+    "path": "/Assets/Cards/Deck/Modificatori/+4(4).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 131,
+    "name": "+7",
+    "path": "/Assets/Cards/Deck/Modificatori/+7.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 132,
+    "name": "Modificatore(1)",
+    "path": "/Assets/Cards/Deck/Modificatori/Modificatore(1).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 133,
+    "name": "Modificatore(2)",
+    "path": "/Assets/Cards/Deck/Modificatori/Modificatore(2).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 134,
+    "name": "Modificatore(3)",
+    "path": "/Assets/Cards/Deck/Modificatori/Modificatore(3).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 135,
+    "name": "Modificatore(4)",
+    "path": "/Assets/Cards/Deck/Modificatori/Modificatore(4).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 136,
+    "name": "Modificatore(5)",
+    "path": "/Assets/Cards/Deck/Modificatori/Modificatore(5).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 137,
+    "name": "Modificatore(6)",
+    "path": "/Assets/Cards/Deck/Modificatori/Modificatore(6).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 138,
+    "name": "Modificatore(7)",
+    "path": "/Assets/Cards/Deck/Modificatori/Modificatore(7).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 139,
+    "name": "Modificatore(8)",
+    "path": "/Assets/Cards/Deck/Modificatori/Modificatore(8).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 140,
+    "name": "Modificatore(9)",
+    "path": "/Assets/Cards/Deck/Modificatori/Modificatore(9).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 141,
+    "name": "Anatema della Serpe(1)",
+    "path": "/Assets/Cards/Deck/Oggetti/Anatema della Serpe(1).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 142,
+    "name": "Anatema della Serpe(2)",
+    "path": "/Assets/Cards/Deck/Oggetti/Anatema della Serpe(2).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 143,
+    "name": "Anellone Ancora Più Grosso",
+    "path": "/Assets/Cards/Deck/Oggetti/Anellone Ancora Più Grosso.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 144,
+    "name": "Anellone(1)",
+    "path": "/Assets/Cards/Deck/Oggetti/Anellone(1).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 145,
+    "name": "Anellone(2)",
+    "path": "/Assets/Cards/Deck/Oggetti/Anellone(2).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 146,
+    "name": "Berserker Mask",
+    "path": "/Assets/Cards/Deck/Oggetti/Berserker Mask.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 147,
+    "name": "Biggest Ring Everpng",
+    "path": "/Assets/Cards/Deck/Oggetti/Biggest Ring Everpng.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 148,
+    "name": "Borsa Senza Fondo",
+    "path": "/Assets/Cards/Deck/Oggetti/Borsa Senza Fondo.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 149,
+    "name": "Catena dell_Anima",
+    "path": "/Assets/Cards/Deck/Oggetti/Catena dell_Anima.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 150,
+    "name": "Chiave del Sigillo",
+    "path": "/Assets/Cards/Deck/Oggetti/Chiave del Sigillo.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 151,
+    "name": "Clessidra Temporale",
+    "path": "/Assets/Cards/Deck/Oggetti/Clessidra Temporale.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 152,
+    "name": "Dragon_s Bile",
+    "path": "/Assets/Cards/Deck/Oggetti/Dragon_s Bile.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 153,
+    "name": "Esca di Pezza",
+    "path": "/Assets/Cards/Deck/Oggetti/Esca di Pezza.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 154,
+    "name": "Goblet of Caffeination",
+    "path": "/Assets/Cards/Deck/Oggetti/Goblet of Caffeination.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 155,
+    "name": "Guanto Maledetto",
+    "path": "/Assets/Cards/Deck/Oggetti/Guanto Maledetto.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 156,
+    "name": "Maschera da Bardo",
+    "path": "/Assets/Cards/Deck/Oggetti/Maschera da Bardo.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 157,
+    "name": "Maschera da Combattente",
+    "path": "/Assets/Cards/Deck/Oggetti/Maschera da Combattente.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 158,
+    "name": "Maschera da Druido",
+    "path": "/Assets/Cards/Deck/Oggetti/Maschera da Druido.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 159,
+    "name": "Maschera da Guardiano",
+    "path": "/Assets/Cards/Deck/Oggetti/Maschera da Guardiano.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 160,
+    "name": "Maschera da Guerriero",
+    "path": "/Assets/Cards/Deck/Oggetti/Maschera da Guerriero.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 161,
+    "name": "Maschera da Ladro",
+    "path": "/Assets/Cards/Deck/Oggetti/Maschera da Ladro.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 162,
+    "name": "Maschera da Mago",
+    "path": "/Assets/Cards/Deck/Oggetti/Maschera da Mago.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 163,
+    "name": "Maschera da Ranger",
+    "path": "/Assets/Cards/Deck/Oggetti/Maschera da Ranger.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 164,
+    "name": "Moneta Rugginosa(1)",
+    "path": "/Assets/Cards/Deck/Oggetti/Moneta Rugginosa(1).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 165,
+    "name": "Moneta Rugginosa(2)",
+    "path": "/Assets/Cards/Deck/Oggetti/Moneta Rugginosa(2).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 166,
+    "name": "Monetta Allettante",
+    "path": "/Assets/Cards/Deck/Oggetti/Monetta Allettante.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 167,
+    "name": "Necromancer Mask",
+    "path": "/Assets/Cards/Deck/Oggetti/Necromancer Mask.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 168,
+    "name": "Silver Lining",
+    "path": "/Assets/Cards/Deck/Oggetti/Silver Lining.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 169,
+    "name": "Soulbound Grimoire",
+    "path": "/Assets/Cards/Deck/Oggetti/Soulbound Grimoire.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 170,
+    "name": "Berserker Challenge",
+    "path": "/Assets/Cards/Deck/Sfide/Berserker Challenge.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 171,
+    "name": "Necromancer Challenge",
+    "path": "/Assets/Cards/Deck/Sfide/Necromancer Challenge.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 172,
+    "name": "Sfida Del Combattente",
+    "path": "/Assets/Cards/Deck/Sfide/Sfida Del Combattente.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 173,
+    "name": "Sfida Del Druido",
+    "path": "/Assets/Cards/Deck/Sfide/Sfida Del Druido.png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 174,
+    "name": "Sfida(1)",
+    "path": "/Assets/Cards/Deck/Sfide/Sfida(1).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 175,
+    "name": "Sfida(10)",
+    "path": "/Assets/Cards/Deck/Sfide/Sfida(10).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 176,
+    "name": "Sfida(11)",
+    "path": "/Assets/Cards/Deck/Sfide/Sfida(11).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 177,
+    "name": "Sfida(12)",
+    "path": "/Assets/Cards/Deck/Sfide/Sfida(12).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 178,
+    "name": "Sfida(13)",
+    "path": "/Assets/Cards/Deck/Sfide/Sfida(13).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 179,
+    "name": "Sfida(14)",
+    "path": "/Assets/Cards/Deck/Sfide/Sfida(14).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 180,
+    "name": "Sfida(2)",
+    "path": "/Assets/Cards/Deck/Sfide/Sfida(2).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 181,
+    "name": "Sfida(3)",
+    "path": "/Assets/Cards/Deck/Sfide/Sfida(3).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 182,
+    "name": "Sfida(4)",
+    "path": "/Assets/Cards/Deck/Sfide/Sfida(4).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 183,
+    "name": "Sfida(5)",
+    "path": "/Assets/Cards/Deck/Sfide/Sfida(5).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 184,
+    "name": "Sfida(6)",
+    "path": "/Assets/Cards/Deck/Sfide/Sfida(6).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 185,
+    "name": "Sfida(7)",
+    "path": "/Assets/Cards/Deck/Sfide/Sfida(7).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 186,
+    "name": "Sfida(8)",
+    "path": "/Assets/Cards/Deck/Sfide/Sfida(8).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 187,
+    "name": "Sfida(9)",
+    "path": "/Assets/Cards/Deck/Sfide/Sfida(9).png",
+    "type": "DeckCards"
+  },
+  {
+    "id": 188,
+    "name": "Ala Sanguigna",
+    "path": "/Assets/Cards/Monsters/Ala Sanguigna.png",
+    "type": "Monsters"
+  },
+  {
+    "id": 189,
+    "name": "Anuro Calderone",
+    "path": "/Assets/Cards/Monsters/Anuro Calderone.png",
+    "type": "Monsters"
+  },
+  {
+    "id": 190,
+    "name": "Ariete Artico",
+    "path": "/Assets/Cards/Monsters/Ariete Artico.png",
+    "type": "Monsters"
+  },
+  {
+    "id": 191,
+    "name": "Doombringer",
+    "path": "/Assets/Cards/Monsters/Doombringer.png",
+    "type": "Monsters"
+  },
+  {
+    "id": 192,
+    "name": "Dracos",
+    "path": "/Assets/Cards/Monsters/Dracos.png",
+    "type": "Monsters"
+  },
+  {
+    "id": 193,
+    "name": "Feral Dragon",
+    "path": "/Assets/Cards/Monsters/Feral Dragon.png",
+    "type": "Monsters"
+  },
+  {
+    "id": 194,
+    "name": "Malamammut",
+    "path": "/Assets/Cards/Monsters/Malamammut.png",
+    "type": "Monsters"
+  },
+  {
+    "id": 195,
+    "name": "Mega Melma",
+    "path": "/Assets/Cards/Monsters/Mega Melma.png",
+    "type": "Monsters"
+  },
+  {
+    "id": 196,
+    "name": "Muscipula Rex",
+    "path": "/Assets/Cards/Monsters/Muscipula Rex.png",
+    "type": "Monsters"
+  },
+  {
+    "id": 197,
+    "name": "Orsogufo Veterano",
+    "path": "/Assets/Cards/Monsters/Orsogufo Veterano.png",
+    "type": "Monsters"
+  },
+  {
+    "id": 198,
+    "name": "Othros",
+    "path": "/Assets/Cards/Monsters/Othros.png",
+    "type": "Monsters"
+  },
+  {
+    "id": 199,
+    "name": "Re Dragoscuro",
+    "path": "/Assets/Cards/Monsters/Re Dragoscuro.png",
+    "type": "Monsters"
+  },
+  {
+    "id": 200,
+    "name": "Regina Abissale",
+    "path": "/Assets/Cards/Monsters/Regina Abissale.png",
+    "type": "Monsters"
+  },
+  {
+    "id": 201,
+    "name": "Reptilian Ripper",
+    "path": "/Assets/Cards/Monsters/Reptilian Ripper.png",
+    "type": "Monsters"
+  },
+  {
+    "id": 202,
+    "name": "Serpente Corona",
+    "path": "/Assets/Cards/Monsters/Serpente Corona.png",
+    "type": "Monsters"
+  },
+  {
+    "id": 203,
+    "name": "T-Rex Supremo",
+    "path": "/Assets/Cards/Monsters/T-Rex Supremo.png",
+    "type": "Monsters"
+  },
+  {
+    "id": 204,
+    "name": "Terratuga",
+    "path": "/Assets/Cards/Monsters/Terratuga.png",
+    "type": "Monsters"
+  },
+  {
+    "id": 205,
+    "name": "Tigre Corrotta",
+    "path": "/Assets/Cards/Monsters/Tigre Corrotta.png",
+    "type": "Monsters"
+  },
+  {
+    "id": 206,
+    "name": "Viverna Titanica",
+    "path": "/Assets/Cards/Monsters/Viverna Titanica.png",
+    "type": "Monsters"
   }
 ]

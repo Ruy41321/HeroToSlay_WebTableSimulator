@@ -18,7 +18,20 @@ body {
   overflow: hidden;
   color: #f2f2f2;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background: #1a1a2e url('/Assets/Miscellaneous/table_background.png') center/cover no-repeat fixed;
+  background: #1a1a2e url('/Assets/Miscellaneous/bg.jpg') center/cover no-repeat fixed;
+}
+
+:root {
+  --board-horizontal-width: min(500px, 70vw);
+  --board-horizontal-height: 244px;
+  --board-vertical-width: var(--board-horizontal-height);
+  --board-vertical-height: var(--board-horizontal-width);
+  --center-table-width: min(460px, 64vw);
+  --center-table-height: clamp(150px, 22vh, 170px);
+  --card-width: 80px;
+  --card-height: 112px;
+  --zone-gap: 10px;
+  --side-hand-rail-width: clamp(84px, 8vw, 108px);
 }
 
 button,
@@ -202,17 +215,21 @@ input {
    ============================= */
 
 .game-board {
+  position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-areas:
     "top-player top-player top-player"
     "left-player center-table right-player"
     "bottom-player bottom-player bottom-player";
-  grid-template-columns: 1fr 400px 1fr;
-  grid-template-rows: minmax(140px, 1fr) 200px minmax(180px, 1fr);
-  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) minmax(380px, var(--center-table-width)) minmax(0, 1fr);
+  grid-template-rows: auto minmax(var(--center-table-height), auto) auto;
+  gap: clamp(10px, 1vw, 16px);
   width: 100%;
-  min-height: 100vh;
-  padding: 56px 300px 12px 300px;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 52px 300px 10px 300px;
 }
 
 .top-player {
@@ -221,10 +238,20 @@ input {
 
 .left-player {
   grid-area: left-player;
+  grid-row: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
 }
 
 .right-player {
   grid-area: right-player;
+  grid-row: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
 }
 
 .bottom-player {
@@ -233,11 +260,22 @@ input {
 
 .center-table-cell {
   grid-area: center-table;
-  width: 400px;
-  height: 200px;
+  width: min(100%, var(--center-table-width));
+  height: var(--center-table-height);
   display: flex;
   align-items: center;
   justify-content: center;
+  justify-self: center;
+  align-self: center;
+}
+
+.top-player,
+.left-player,
+.right-player,
+.bottom-player,
+.center-table-cell {
+  position: relative;
+  z-index: 10;
 }
 
 /* =============================
@@ -249,41 +287,46 @@ input {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  min-height: 120px;
+  min-height: 0;
   padding: 6px;
-  transform-origin: center center;
+  width: 100%;
 }
 
-.player-zone.position-top {
-  transform: rotate(180deg);
+.player-zone-content {
+  display: flex;
+  gap: var(--zone-gap);
+  align-items: center;
+  justify-content: center;
+  width: 100%;
 }
 
-.player-zone.position-left {
-  transform: rotate(90deg);
+.player-zone.position-bottom .player-zone-content {
+  flex-direction: column;
+  width: min(100%, calc(var(--board-horizontal-width) + 120px));
 }
 
-.player-zone.position-right {
-  transform: rotate(-90deg);
+.player-zone.position-top .player-zone-content {
+  flex-direction: column-reverse;
+  width: min(100%, calc(var(--board-horizontal-width) + 120px));
 }
 
-.player-zone.position-bottom {
-  transform: none;
+.player-zone.position-left .player-zone-content,
+.player-zone.position-right .player-zone-content {
+  width: min(100%, calc(var(--board-vertical-width) + var(--side-hand-rail-width) + var(--zone-gap)));
+  min-height: var(--board-vertical-height);
 }
 
-.player-zone.position-top .player-nickname {
-  transform: rotate(180deg);
+.player-zone.position-left .player-zone-content {
+  flex-direction: row-reverse;
 }
 
-.player-zone.position-left .player-nickname {
-  transform: rotate(-90deg);
+.player-zone.position-right .player-zone-content {
+  flex-direction: row;
 }
 
-.player-zone.position-right .player-nickname {
-  transform: rotate(90deg);
-}
-
-.player-zone.position-bottom .player-nickname {
-  transform: none;
+.left-player .player-zone,
+.right-player .player-zone {
+  justify-content: center;
 }
 
 .player-zone-local .player-nickname {
@@ -292,18 +335,156 @@ input {
 
 .player-nickname {
   display: inline-block;
-  transform-origin: center center;
   font-weight: 600;
   color: #dcdcdc;
 }
 
-.player-hand,
-.player-board {
+.player-hand {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  align-content: flex-start;
   gap: 8px;
-  min-height: 116px;
+  min-height: 0;
+  max-width: 100%;
+}
+
+.player-zone.position-top .player-hand {
+  width: min(100%, calc(var(--board-horizontal-width) + 120px));
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  overflow-x: auto;
+  overflow-y: hidden;
+  min-height: 94px;
+  padding: 0 6px 4px;
+  gap: 6px;
+}
+
+.player-zone.position-top .player-hand .card {
+  flex: 0 0 auto;
+  width: 64px;
+  height: 90px;
+}
+
+.player-zone.position-bottom:not(.player-zone-local) .player-hand {
+  width: min(100%, calc(var(--board-horizontal-width) + 120px));
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  overflow-x: auto;
+  overflow-y: hidden;
+  min-height: 94px;
+  padding: 0 6px 4px;
+  gap: 6px;
+}
+
+.player-zone.position-bottom:not(.player-zone-local) .player-hand .card {
+  flex: 0 0 auto;
+  width: 64px;
+  height: 90px;
+}
+
+.player-zone.position-bottom.player-zone-local .player-hand {
+  width: min(100%, calc(var(--board-horizontal-width) + 120px));
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  overflow-x: auto;
+  overflow-y: hidden;
+  min-height: calc(var(--card-height) + 8px);
+  padding: 0 6px 4px;
+}
+
+.player-zone.position-bottom.player-zone-local .player-hand .card {
+  flex: 0 0 auto;
+}
+
+.player-zone.position-left .player-hand,
+.player-zone.position-right .player-hand {
+  width: var(--side-hand-rail-width);
+  min-width: var(--side-hand-rail-width);
+  max-width: var(--side-hand-rail-width);
+  min-height: var(--board-vertical-height);
+  max-height: var(--board-vertical-height);
+  flex-direction: column;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: center;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 2px 0;
+}
+
+.player-zone.position-left .player-hand .card,
+.player-zone.position-right .player-hand .card {
+  flex: 0 0 auto;
+  margin: 12px 0;
+}
+
+.player-zone.position-left .player-hand .card {
+  transform: rotate(90deg);
+}
+
+.player-zone.position-right .player-hand .card {
+  transform: rotate(270deg);
+}
+
+.player-zone.position-left .player-hand .card:hover {
+  transform: rotate(90deg) scale(1.06);
+}
+
+.player-zone.position-right .player-hand .card:hover {
+  transform: rotate(270deg) scale(1.06);
+}
+
+.player-board {
+  width: min(var(--board-horizontal-width), 100%);
+  height: var(--board-horizontal-height);
+  flex: 0 1 var(--board-horizontal-width);
+  position: relative;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px dashed rgba(255, 255, 255, 0.22);
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.player-zone.position-top .player-board,
+.player-zone.position-bottom .player-board {
+  height: var(--board-horizontal-height);
+  max-height: var(--board-horizontal-height);
+}
+
+.player-zone.position-left .player-board,
+.player-zone.position-right .player-board {
+  width: var(--board-vertical-width);
+  min-width: var(--board-vertical-width);
+  max-width: var(--board-vertical-width);
+  height: var(--board-vertical-height);
+  flex: 0 0 var(--board-vertical-width);
+}
+
+.player-board-card {
+  position: absolute;
+  width: var(--card-width);
+  height: var(--card-height);
+  touch-action: none;
+  cursor: grab;
+  transform-origin: center center;
+}
+
+.player-board-card .card {
+  width: 100%;
+  height: 100%;
+}
+
+.player-board-card .card:hover {
+  transform: none;
+}
+
+.player-board-card-dragging {
+  z-index: 90;
+  cursor: grabbing;
 }
 
 /* =============================
@@ -316,8 +497,16 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  padding: 20px;
+  gap: 12px;
+  padding: 10px;
+}
+
+.monster-center-group {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 12px;
   border-radius: 12px;
   background: rgba(0, 0, 0, 0.5);
 }
@@ -355,11 +544,11 @@ input {
 }
 
 .monster-deck-pile {
-  padding: 8px;
+  padding: 4px;
 }
 
 .active-monster-slots {
-  padding: 8px 12px;
+  padding: 4px 6px;
   gap: 10px;
 }
 
@@ -369,8 +558,8 @@ input {
 }
 
 .active-monster-slot {
-  width: 80px;
-  height: 112px;
+  width: var(--card-width);
+  height: var(--card-height);
 }
 
 .pile-label {
@@ -384,8 +573,8 @@ input {
    ============================= */
 
 .card {
-  width: 80px;
-  height: 112px;
+  width: var(--card-width);
+  height: var(--card-height);
   border-radius: 6px;
   cursor: pointer;
   overflow: hidden;
@@ -405,15 +594,17 @@ input {
 .card img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
+  background: rgba(0, 0, 0, 0.35);
   border-radius: 6px;
   user-select: none;
   pointer-events: none;
 }
 
 .monster-slot-empty {
-  width: 80px;
-  height: 112px;
+  width: var(--card-width);
+  height: var(--card-height);
   border: 2px dashed rgba(255, 255, 255, 0.3);
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.05);
@@ -427,14 +618,15 @@ input {
   position: fixed;
   right: 16px;
   top: 50%;
-  width: 240px;
-  min-height: 360px;
+  width: 300px;
+  min-height: 430px;
   z-index: 100;
   padding: 10px;
   border-radius: 10px;
   transform: translateY(-50%);
   background: rgba(0, 0, 0, 0.62);
   border: 1px solid rgba(255, 255, 255, 0.12);
+  pointer-events: none;
   display: none;
 }
 
@@ -443,10 +635,33 @@ input {
 }
 
 .focus-preview-image {
-  width: 240px;
-  height: 336px;
-  object-fit: cover;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: 400px;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  margin: 0 auto;
+  background: rgba(0, 0, 0, 0.35);
   border-radius: 8px;
+}
+
+.focus-preview-tall {
+  width: 380px;
+  min-height: 590px;
+}
+
+.focus-preview-tall .focus-preview-image {
+  max-height: 540px;
+}
+
+.focus-preview-centered {
+  right: auto;
+  left: 50%;
+  top: 50%;
+  z-index: 780;
+  transform: translate(-50%, -50%);
 }
 
 .focus-preview-name {
@@ -778,13 +993,67 @@ input {
   .center-table-cell {
     width: 100%;
     height: auto;
-    min-height: 220px;
+    min-height: var(--center-table-height);
   }
 
   .center-table {
     flex-wrap: wrap;
     justify-content: center;
     padding: 20px;
+  }
+
+  .monster-center-group {
+    width: 100%;
+    max-width: 100%;
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+
+  .player-zone-content,
+  .player-zone.position-top .player-zone-content,
+  .player-zone.position-bottom .player-zone-content {
+    width: 100%;
+  }
+
+  .player-zone.position-left .player-zone-content,
+  .player-zone.position-right .player-zone-content {
+    flex-direction: column;
+    min-height: auto;
+  }
+
+  .left-player,
+  .right-player {
+    grid-row: auto;
+  }
+
+  .player-zone.position-left .player-hand,
+  .player-zone.position-right .player-hand {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    min-height: calc(var(--card-height) + 8px);
+    max-height: none;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0 6px 4px;
+  }
+
+  .player-zone.position-left .player-board,
+  .player-zone.position-right .player-board {
+    width: 100%;
+    flex: 0 1 auto;
+  }
+
+  .player-zone .player-hand .card {
+    flex: 0 0 auto;
+  }
+
+  .player-board {
+    width: 100%;
+    height: var(--board-horizontal-height);
   }
 
   .mainhero-deck-pile {

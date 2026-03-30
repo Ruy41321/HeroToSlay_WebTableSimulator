@@ -9,6 +9,10 @@
         card: {
           type: Object,
           default: null
+        },
+        centered: {
+          type: Boolean,
+          default: false
         }
       },
       computed: {
@@ -20,10 +24,22 @@
         },
         cardPath() {
           return this.card && this.card.path ? this.card.path : '';
+        },
+        cardType() {
+          return this.card && typeof this.card.type === 'string' ? this.card.type.toLowerCase() : '';
+        },
+        isTallType() {
+          return this.cardType === 'mainhero' || this.cardType === 'monster' || this.cardType === 'monsters';
+        },
+        previewClass() {
+          return {
+            'focus-preview-centered': this.centered,
+            'focus-preview-tall': this.isTallType
+          };
         }
       },
       template: `
-        <aside class="focus-preview" v-show="isVisible">
+        <aside class="focus-preview" :class="previewClass" v-show="isVisible">
           <img
             v-if="isVisible"
             class="focus-preview-image"

@@ -372,16 +372,16 @@ describe('Approval integration', () => {
       {
         id: 'd1',
         name: 'Discard Hero 1',
-        type: 'hero',
-        path: '/Assets/Cards/Heroes/d1.png',
+        type: 'DeckCards',
+        path: '/Assets/Cards/Deck/d1.png',
         isFaceUp: true,
         ownerId: null
       },
       {
         id: 'd2',
         name: 'Discard Hero 2',
-        type: 'hero',
-        path: '/Assets/Cards/Heroes/d2.png',
+        type: 'DeckCards',
+        path: '/Assets/Cards/Deck/d2.png',
         isFaceUp: true,
         ownerId: null
       }
@@ -450,8 +450,8 @@ describe('Approval integration', () => {
       {
         id: 'd3',
         name: 'Discard Hero 3',
-        type: 'hero',
-        path: '/Assets/Cards/Heroes/d3.png',
+        type: 'DeckCards',
+        path: '/Assets/Cards/Deck/d3.png',
         isFaceUp: true,
         ownerId: null
       }
@@ -496,16 +496,16 @@ describe('Approval integration', () => {
       {
         id: 'mh-approval-on-1',
         name: 'MainHero Approval ON 1',
-        type: 'mainhero',
-        path: '/Assets/Cards/MainHeroes/mh-on-1.png',
+        type: 'MainHero',
+        path: '/Assets/Cards/Heroes/mh-on-1.png',
         isFaceUp: false,
         ownerId: null
       },
       {
         id: 'mh-approval-on-2',
         name: 'MainHero Approval ON 2',
-        type: 'mainhero',
-        path: '/Assets/Cards/MainHeroes/mh-on-2.png',
+        type: 'MainHero',
+        path: '/Assets/Cards/Heroes/mh-on-2.png',
         isFaceUp: false,
         ownerId: null
       }
@@ -552,7 +552,7 @@ describe('Approval integration', () => {
 
     expect(updatedState.mainHeroDeck.map((card) => String(card.id))).toEqual(['mh-approval-on-2']);
     expect(movedCard).toBeDefined();
-    expect(movedCard.type).toBe('mainhero');
+    expect(movedCard.type).toBe('MainHero');
     expect(String(movedCard.ownerId)).toBe(String(requesterId));
     expect(movedCard.isFaceUp).toBe(true);
     expect(
@@ -583,16 +583,16 @@ describe('Approval integration', () => {
       {
         id: 'mh-approval-off-1',
         name: 'MainHero Approval OFF 1',
-        type: 'mainhero',
-        path: '/Assets/Cards/MainHeroes/mh-off-1.png',
+        type: 'MainHero',
+        path: '/Assets/Cards/Heroes/mh-off-1.png',
         isFaceUp: true,
         ownerId: requesterId
       },
       {
         id: 'board-hero-off-1',
         name: 'Board Hero OFF 1',
-        type: 'hero',
-        path: '/Assets/Cards/Heroes/board-hero-off-1.png',
+        type: 'DeckCards',
+        path: '/Assets/Cards/Deck/board-hero-off-1.png',
         isFaceUp: true,
         ownerId: requesterId
       }
@@ -602,8 +602,8 @@ describe('Approval integration', () => {
       {
         id: 'mh-deck-off-1',
         name: 'MainHero Deck OFF 1',
-        type: 'mainhero',
-        path: '/Assets/Cards/MainHeroes/mh-deck-off-1.png',
+        type: 'MainHero',
+        path: '/Assets/Cards/Heroes/mh-deck-off-1.png',
         isFaceUp: false,
         ownerId: null
       }
@@ -652,7 +652,7 @@ describe('Approval integration', () => {
       'mh-deck-off-1',
       'mh-approval-off-1'
     ]);
-    expect(returnedCard.type).toBe('mainhero');
+    expect(returnedCard.type).toBe('MainHero');
     expect(returnedCard.ownerId).toBeNull();
     expect(returnedCard.isFaceUp).toBe(false);
     expect(
@@ -669,7 +669,7 @@ describe('Approval integration', () => {
       {
         id: 'am-10',
         name: 'Active Monster 10',
-        type: 'monster',
+        type: 'Monsters',
         path: '/Assets/Cards/Monsters/am10.png',
         isFaceUp: true,
         ownerId: 'p1'
@@ -681,7 +681,7 @@ describe('Approval integration', () => {
       {
         id: 'deck-10',
         name: 'Deck Monster 10',
-        type: 'monster',
+        type: 'Monsters',
         path: '/Assets/Cards/Monsters/d10.png',
         isFaceUp: false,
         ownerId: null
@@ -752,7 +752,7 @@ describe('Approval integration', () => {
       {
         id: 'am-20',
         name: 'Active Monster 20',
-        type: 'monster',
+        type: 'Monsters',
         path: '/Assets/Cards/Monsters/am20.png',
         isFaceUp: true,
         ownerId: 'p2'
