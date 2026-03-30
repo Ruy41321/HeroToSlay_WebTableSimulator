@@ -1038,7 +1038,11 @@
               {{ showRestrictedLog ? 'Hide Action History' : 'Show Action History' }}
             </button>
 
-            <button type="button" class="approval-toggle" @click="$emit('cycle-background')">
+            <button
+              type="button"
+              class="approval-toggle topbar-bg-button"
+              @click="$emit('cycle-background')"
+            >
               Change Background
             </button>
 

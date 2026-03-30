@@ -77,8 +77,37 @@ input {
 }
 
 .lobby-controls h1 {
-  margin: 0 0 16px;
+  margin: 0;
   font-size: 1.7rem;
+}
+
+.lobby-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.lobby-bg-button {
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 999px;
+  padding: 7px 14px;
+  color: #ffffff;
+  background: rgba(47, 127, 189, 0.28);
+  cursor: pointer;
+  transition: filter 0.15s ease, background-color 0.15s ease;
+}
+
+.lobby-bg-button:hover {
+  filter: brightness(1.08);
+  background: rgba(47, 127, 189, 0.42);
+}
+
+.lobby-bg-button:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 2px;
 }
 
 .lobby-join-row {
@@ -964,6 +993,21 @@ input {
 
 .approval-off {
   background: #7f8c8d;
+}
+
+.topbar-bg-button {
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(47, 127, 189, 0.28);
+}
+
+.topbar-bg-button:hover {
+  filter: brightness(1.08);
+  background: rgba(47, 127, 189, 0.42);
+}
+
+.topbar-bg-button:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 2px;
 }
 
 /* =============================
