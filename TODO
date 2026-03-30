@@ -1,3 +1,0 @@
-Aggiungere un nuovo tipo di carte localizzate in /Assets/Cards/MainHeroes di tipo MainHero e Aggiungere un MainHeroDeck in alto a destra con le carte di questo tipo che permette che gia funziona per la pila degli scarti di guardarlo liberamente e prendere una carta e metterla sul proprio campo di gioco attivo (non in mano, bensi attivata) e puo anche essere riposta
-
-rendere le carte presenti nel campo delle carte attivate (l'intera board) drag and droppable sul tavolo di gioco per poterle spostare da una posizione all altra del campo di gioco liberamente
