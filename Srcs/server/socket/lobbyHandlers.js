@@ -25,6 +25,19 @@ function sanitizeNickname(nickname) {
   return nickname.trim();
 }
 
+function sanitizeDisplayName(displayName) {
+  if (typeof displayName !== 'string') {
+    return 'Spectator';
+  }
+
+  const trimmed = displayName.trim();
+  if (!trimmed) {
+    return 'Spectator';
+  }
+
+  return trimmed.slice(0, 20);
+}
+
 function hasDuplicateNickname(players, nickname) {
   const nicknameLower = nickname.toLowerCase();
   return players.some((player) => player.nickname.toLowerCase() === nicknameLower);
@@ -32,6 +45,40 @@ function hasDuplicateNickname(players, nickname) {
 
 function registerLobbyHandlers(io, socket, context) {
   socket.on('join_lobby', ({ nickname } = {}) => {
+    if (socket.isSpectator) {
+      context.gameManager.removeSpectator(socket.id);
+      socket.isSpectator = false;
+    }
+
+    const cleanNickname = sanitizeNickname(nickname);
+    const reconnect = context.gameManager.reconnectPlayer(cleanNickname, socket.id);
+
+    if (reconnect) {
+      socket.playerId = reconnect.player.id;
+      socket.nickname = reconnect.player.nickname;
+      socket.isSpectator = false;
+
+      const lobbyPlayer = context.lobbyPlayers.find((player) => player.id === reconnect.player.id);
+      if (lobbyPlayer) {
+        lobbyPlayer.socketId = socket.id;
+        lobbyPlayer.isDisconnected = false;
+      }
+
+      socket.emit('reconnect_success', {
+        yourPlayerId: reconnect.player.id,
+        yourNickname: reconnect.player.nickname
+      });
+      socket.emit('state_update', reconnect.gameState);
+
+      io.emit('event_log', {
+        message: `${reconnect.player.nickname} reconnected`,
+        timestamp: toTimestamp()
+      });
+
+      context.gameManager.broadcastState();
+      return;
+    }
+
     if (context.gameInProgress) {
       emitError(socket, 'Cannot join lobby while a game is in progress.');
       return;
@@ -42,7 +89,6 @@ function registerLobbyHandlers(io, socket, context) {
       return;
     }
 
-    const cleanNickname = sanitizeNickname(nickname);
     if (!cleanNickname) {
       emitError(socket, 'Nickname is required.');
       return;
@@ -60,8 +106,50 @@ function registerLobbyHandlers(io, socket, context) {
     }
 
     const player = new Player(uuidv4(), cleanNickname, socket.id);
+    socket.playerId = player.id;
+    socket.nickname = player.nickname;
+    socket.isSpectator = false;
     context.lobbyPlayers.push(player);
+    console.log(`[LOBBY] "${cleanNickname}" joined queue (${context.lobbyPlayers.length}/4)`);
     context.broadcastLobbyUpdate();
+  });
+
+  socket.on('join_spectator', ({ displayName } = {}) => {
+    const safeDisplayName = sanitizeDisplayName(displayName);
+
+    context.lobbyPlayers = context.lobbyPlayers.filter((player) => player.socketId !== socket.id);
+
+    const spectator = context.gameManager.addSpectator(socket.id, safeDisplayName);
+    socket.isSpectator = true;
+    socket.playerId = null;
+    socket.nickname = null;
+
+    socket.emit('spectator_joined', {
+      displayName: spectator.displayName,
+      currentSpectators: context.gameManager.getSpectators()
+    });
+
+    if (context.gameInProgress && context.gameManager.state.phase === 'playing') {
+      socket.emit('state_update', context.gameManager.getStateForSpectator());
+    } else {
+      socket.emit('lobby_update', {
+        players: context.lobbyPlayers.map((player) => ({
+          id: player.id,
+          nickname: player.nickname
+        })),
+        gameInProgress: false,
+        spectators: context.gameManager.getSpectators()
+      });
+    }
+
+    io.emit('event_log', {
+      message: `${spectator.displayName} joined as spectator`,
+      timestamp: toTimestamp()
+    });
+
+    if (!context.gameInProgress) {
+      context.broadcastLobbyUpdate();
+    }
   });
 
   socket.on('start_game', () => {
@@ -77,9 +165,17 @@ function registerLobbyHandlers(io, socket, context) {
 
     context.gameManager.startGame(context.lobbyPlayers);
     context.gameInProgress = true;
+    console.log(
+      `[GAME] Game started with players: ${context.lobbyPlayers
+        .map((player) => player.nickname)
+        .join(', ')}`
+    );
 
     for (const player of context.lobbyPlayers) {
-      io.to(player.socketId).emit('game_start', { yourPlayerId: player.id });
+      io.to(player.socketId).emit('game_start', {
+        yourPlayerId: player.id,
+        yourNickname: player.nickname
+      });
     }
 
     context.gameManager.broadcastState();
@@ -88,6 +184,7 @@ function registerLobbyHandlers(io, socket, context) {
   });
 
   socket.on('reset_lobby', () => {
+    console.log('[GAME] Game reset — returning to lobby');
     context.gameManager.reset();
     context.lobbyPlayers = [];
     context.gameInProgress = false;
@@ -95,17 +192,25 @@ function registerLobbyHandlers(io, socket, context) {
   });
 
   socket.on('disconnect', () => {
-    const lobbyIndex = context.lobbyPlayers.findIndex((player) => player.socketId === socket.id);
-    let disconnectedLobbyPlayer = null;
-
-    if (lobbyIndex !== -1) {
-      [disconnectedLobbyPlayer] = context.lobbyPlayers.splice(lobbyIndex, 1);
+    if (socket.isSpectator) {
+      context.gameManager.removeSpectator(socket.id);
+      return;
     }
 
     if (!context.gameInProgress) {
+      const lobbyIndex = context.lobbyPlayers.findIndex((player) => player.socketId === socket.id);
+
+      if (lobbyIndex === -1) {
+        return;
+      }
+
+      const [disconnectedLobbyPlayer] = context.lobbyPlayers.splice(lobbyIndex, 1);
+      console.log(`[LOBBY] "${disconnectedLobbyPlayer.nickname}" disconnected`);
+
       if (disconnectedLobbyPlayer) {
         context.broadcastLobbyUpdate();
       }
+
       return;
     }
 
@@ -116,21 +221,21 @@ function registerLobbyHandlers(io, socket, context) {
       return;
     }
 
-    const [disconnectedActivePlayer] = activePlayers.splice(activeIndex, 1);
-    context.lobbyPlayers = context.lobbyPlayers.filter((player) => player.id !== disconnectedActivePlayer.id);
+    const disconnectedActivePlayer = activePlayers[activeIndex];
+    context.gameManager.markDisconnected(disconnectedActivePlayer);
+
+    const lobbyPlayer = context.lobbyPlayers.find((player) => player.id === disconnectedActivePlayer.id);
+    if (lobbyPlayer) {
+      lobbyPlayer.socketId = null;
+      lobbyPlayer.isDisconnected = true;
+    }
+
+    console.log(`[LOBBY] "${disconnectedActivePlayer.nickname}" disconnected`);
 
     io.emit('event_log', {
-      message: `${disconnectedActivePlayer.nickname} disconnected from the game.`,
+      message: `${disconnectedActivePlayer.nickname} disconnected - slot held for 10 minutes`,
       timestamp: toTimestamp()
     });
-
-    if (activePlayers.length === 0) {
-      context.gameManager.reset();
-      context.lobbyPlayers = [];
-      context.gameInProgress = false;
-      context.broadcastLobbyUpdate();
-      return;
-    }
 
     context.gameManager.broadcastState();
   });

@@ -8,6 +8,11 @@ function emitError(socket, message) {
 
 function registerApprovalHandlers(io, socket, context) {
   socket.on('respond_approval', ({ actionId, decision } = {}) => {
+    if (socket.isSpectator) {
+      socket.emit('error', { message: 'Spectators cannot perform actions.' });
+      return;
+    }
+
     if (!context.gameInProgress) {
       emitError(socket, 'No active game in progress.');
       return;
@@ -47,6 +52,7 @@ function registerApprovalHandlers(io, socket, context) {
         granted: true,
         approverNickname: responder.nickname
       });
+      console.log(`[APPROVAL] actionId=${actionId} granted=true by ${responder.nickname}`);
       return;
     }
 
@@ -63,6 +69,7 @@ function registerApprovalHandlers(io, socket, context) {
         granted: false,
         approverNickname: responder.nickname
       });
+      console.log(`[APPROVAL] actionId=${actionId} granted=false by ${responder.nickname}`);
       return;
     }
 

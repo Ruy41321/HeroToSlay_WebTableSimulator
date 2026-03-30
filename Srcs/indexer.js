@@ -18,6 +18,11 @@ const CARD_FOLDERS = [
     publicBasePath: '/Assets/Cards/Heroes'
   },
   {
+    type: 'mainhero',
+    absolutePath: path.join(ASSETS_ROOT, 'Cards', 'MainHeroes'),
+    publicBasePath: '/Assets/Cards/MainHeroes'
+  },
+  {
     type: 'monster',
     absolutePath: path.join(ASSETS_ROOT, 'Cards', 'Monsters'),
     publicBasePath: '/Assets/Cards/Monsters'
@@ -47,6 +52,7 @@ function buildCards() {
   const cards = [];
   const counts = {
     hero: 0,
+    mainhero: 0,
     monster: 0
   };
 
@@ -78,10 +84,11 @@ function main() {
   const { cards, counts } = buildCards();
 
   console.log(`Heroes found: ${counts.hero}`);
+  console.log(`MainHeroes found: ${counts.mainhero}`);
   console.log(`Monsters found: ${counts.monster}`);
 
   if (cards.length === 0) {
-    console.error('No card images found in Heroes or Monsters folders.');
+    console.error('No card images found in Heroes, MainHeroes, or Monsters folders.');
     process.exit(1);
   }
 

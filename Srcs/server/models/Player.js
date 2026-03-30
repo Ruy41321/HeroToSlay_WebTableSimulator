@@ -7,6 +7,7 @@ class Player {
     this.id = id;
     this.nickname = nickname;
     this.socketId = socketId;
+    this.isDisconnected = false;
     this.hand = [];
     this.board = [];
   }

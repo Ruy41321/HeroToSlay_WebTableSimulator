@@ -12,13 +12,23 @@
         socket,
         view: 'lobby',
         localPlayerId: null,
+        localPlayerNickname: null,
+        isSpectator: false,
+        spectatorDisplayName: null,
         lobbyPlayers: [],
         gameInProgress: false,
         gameState: null,
         pendingApproval: null,
+        pendingOwnRequest: null,
         eventLog: [],
         restrictedLog: [],
-        lastDiceRoll: null
+        showEventLog: true,
+        showRestrictedLog: true,
+        lastDiceRoll: null,
+        discardPileModal: [],
+        showDiscardModal: false,
+        mainHeroPileModal: [],
+        showMainHeroModal: false
       };
     },
     computed: {
@@ -36,24 +46,99 @@
         return;
       }
 
+      this.socket.on('connect', () => {
+        console.log('[SOCKET] Connected to server');
+      });
+
       this.socket.on('lobby_update', (data = {}) => {
+        const wasInGame = this.gameInProgress || this.view === 'game' || this.gameState !== null;
         this.lobbyPlayers = Array.isArray(data.players) ? data.players : [];
         this.gameInProgress = Boolean(data.gameInProgress);
 
         if (!this.gameInProgress) {
+          if (wasInGame) {
+            console.log('[LOBBY] Reset — returning to lobby view');
+          }
           this.view = 'lobby';
           this.gameState = null;
           this.localPlayerId = null;
+          this.localPlayerNickname = null;
+          this.isSpectator = false;
+          this.spectatorDisplayName = null;
           this.pendingApproval = null;
+          this.pendingOwnRequest = null;
           this.eventLog = [];
           this.restrictedLog = [];
           this.lastDiceRoll = null;
+          this.discardPileModal = [];
+          this.showDiscardModal = false;
+          this.mainHeroPileModal = [];
+          this.showMainHeroModal = false;
         }
       });
 
-      this.socket.on('game_start', ({ yourPlayerId } = {}) => {
+      this.socket.on('game_start', ({ yourPlayerId, yourNickname } = {}) => {
+        console.log(`[GAME] Game started — localPlayerId: ${yourPlayerId}`);
         this.localPlayerId = yourPlayerId || null;
+        this.localPlayerNickname =
+          typeof yourNickname === 'string' && yourNickname.trim().length > 0
+            ? yourNickname.trim()
+            : null;
+        this.isSpectator = false;
+        this.spectatorDisplayName = null;
         this.view = 'game';
+      });
+
+      this.socket.on('reconnect_success', (data = {}) => {
+        console.log('[RECONNECT] Rejoined as', data.yourNickname);
+        this.localPlayerId = data.yourPlayerId || null;
+        this.localPlayerNickname = data.yourNickname || null;
+        this.isSpectator = false;
+        this.spectatorDisplayName = null;
+        this.view = 'game';
+      });
+
+      this.socket.on('spectator_joined', (data = {}) => {
+        console.log('[SPECTATOR] Joined as', data.displayName);
+        this.localPlayerId = null;
+        this.localPlayerNickname = null;
+        this.isSpectator = true;
+        this.spectatorDisplayName = data.displayName || 'Spectator';
+        this.view = 'game';
+      });
+
+      this.socket.on('approval_pending', (data = {}) => {
+        console.log('[APPROVAL] Pending request:', data.type, 'by', data.requesterNickname);
+
+        if (!data || typeof data !== 'object') {
+          return;
+        }
+
+        const requesterId = data.requesterId ? String(data.requesterId) : null;
+        const localPlayerId = this.localPlayerId ? String(this.localPlayerId) : null;
+        const isRequesterById = requesterId && localPlayerId && requesterId === localPlayerId;
+
+        const requesterNickname =
+          typeof data.requesterNickname === 'string' ? data.requesterNickname.trim().toLowerCase() : '';
+        const localNicknameFromStart =
+          typeof this.localPlayerNickname === 'string' ? this.localPlayerNickname.trim().toLowerCase() : '';
+        const localNicknameFromState = this.getLocalNickname().trim().toLowerCase();
+        const localNickname = localNicknameFromStart || localNicknameFromState;
+        const isRequesterByNickname =
+          requesterNickname && localNickname && requesterNickname === localNickname;
+
+        if (isRequesterById || isRequesterByNickname) {
+          this.pendingOwnRequest = {
+            actionId: data.actionId || null,
+            type: data.type || null,
+            details: data.details || ''
+          };
+        }
+      });
+
+      this.socket.on('approval_pending_cleared', () => {
+        console.log('[APPROVAL] Pending request cleared');
+        this.pendingOwnRequest = null;
       });
 
       this.socket.on('state_update', (state) => {
@@ -62,6 +147,7 @@
         }
 
         this.gameState = state;
+        console.log('[STATE] State updated — phase:', this.gameState?.phase);
 
         if (state.phase === 'playing') {
           this.view = 'game';
@@ -73,16 +159,20 @@
         }
       });
 
-      this.socket.on('approval_request', (request) => {
-        if (!request || typeof request !== 'object') {
+      this.socket.on('approval_request', (data) => {
+        if (!data || typeof data !== 'object') {
           this.pendingApproval = null;
           return;
         }
 
-        const requesterId = request.requesterId ? String(request.requesterId) : null;
+        console.log(
+          `[APPROVAL] Incoming request: ${data.type} from ${data.requesterNickname}`
+        );
+
+        const requesterId = data.requesterId ? String(data.requesterId) : null;
         const requesterNickname =
-          request.requesterNickname && typeof request.requesterNickname === 'string'
-            ? request.requesterNickname.toLowerCase()
+          data.requesterNickname && typeof data.requesterNickname === 'string'
+            ? data.requesterNickname.toLowerCase()
             : null;
         const localNickname = this.getLocalNickname();
 
@@ -91,11 +181,14 @@
         const isRequesterByNickname =
           requesterNickname && localNickname && requesterNickname === localNickname.toLowerCase();
 
-        this.pendingApproval = isRequesterById || isRequesterByNickname ? null : request;
+        this.pendingApproval = isRequesterById || isRequesterByNickname ? null : data;
       });
 
-      this.socket.on('approval_result', ({ actionId, granted, approverNickname } = {}) => {
+      this.socket.on('approval_result', (data = {}) => {
+        const { actionId, granted, approverNickname } = data;
+        console.log(`[APPROVAL] Result: granted=${granted}`);
         this.pendingApproval = null;
+        this.pendingOwnRequest = null;
 
         const resultText = granted ? 'granted' : 'denied';
         const approverText = approverNickname || 'unknown player';
@@ -121,25 +214,28 @@
         this.restrictedLog = Array.isArray(entries) ? entries : [];
       });
 
-      this.socket.on('dice_result', ({ nickname, result } = {}) => {
+      this.socket.on('dice_result', ({ result } = {}) => {
         this.lastDiceRoll = Number.isInteger(result) ? result : null;
-
-        if (nickname && Number.isInteger(result)) {
-          this.prependEvent({
-            message: `${nickname} rolled a ${result}`,
-            timestamp: new Date().toISOString()
-          });
-        }
       });
 
-      this.socket.on('error', ({ message } = {}) => {
-        if (!message) {
+      this.socket.on('discard_pile', (data = {}) => {
+        this.discardPileModal = Array.isArray(data.cards) ? data.cards : [];
+        this.showDiscardModal = true;
+      });
+
+      this.socket.on('mainhero_deck', (data = {}) => {
+        this.mainHeroPileModal = Array.isArray(data.cards) ? data.cards : [];
+        this.showMainHeroModal = true;
+      });
+
+      this.socket.on('error', (data = {}) => {
+        if (!data.message) {
           return;
         }
 
-        console.error(message);
+        console.error('[ERROR]', data.message);
         this.prependEvent({
-          message: `Error: ${message}`,
+          message: `Error: ${data.message}`,
           timestamp: new Date().toISOString()
         });
       });
@@ -168,7 +264,21 @@
           return;
         }
 
+        if (typeof nickname === 'string' && nickname.trim().length > 0) {
+          this.localPlayerNickname = nickname.trim();
+        }
+
+        this.isSpectator = false;
+        this.spectatorDisplayName = null;
+
         this.socket.emit('join_lobby', { nickname });
+      },
+      joinSpectator(displayName) {
+        if (!this.socket) {
+          return;
+        }
+
+        this.socket.emit('join_spectator', { displayName });
       },
       startGame() {
         if (!this.socket) {
@@ -179,6 +289,11 @@
       },
       requestAction(type, payload) {
         if (!this.socket) {
+          return;
+        }
+
+        if (this.pendingOwnRequest) {
+          console.warn('[APPROVAL] Ignored request_action while own request is pending.');
           return;
         }
 
@@ -214,6 +329,19 @@
 
         this.socket.emit('view_discard', {});
       },
+      viewMainHeroDeck() {
+        if (!this.socket) {
+          return;
+        }
+
+        this.socket.emit('view_main_heroes', {});
+      },
+      closeDiscardModal() {
+        this.showDiscardModal = false;
+      },
+      closeMainHeroModal() {
+        this.showMainHeroModal = false;
+      },
       rollDice() {
         if (!this.socket) {
           return;
@@ -227,6 +355,12 @@
         }
 
         this.socket.emit('toggle_approval', {});
+      },
+      onToggleEventLog() {
+        this.showEventLog = !this.showEventLog;
+      },
+      onToggleRestrictedLog() {
+        this.showRestrictedLog = !this.showRestrictedLog;
       },
       resetLobby() {
         if (!this.socket) {
@@ -243,6 +377,7 @@
           :players="lobbyPlayers"
           :game-in-progress="gameInProgress"
           @join="joinLobby"
+          @join-spectator="joinSpectator"
           @start="startGame"
           @reset-lobby="resetLobby"
         ></lobby-view>
@@ -252,16 +387,29 @@
           :game-state="gameState"
           :local-player-id="localPlayerId"
           :pending-approval="pendingApproval"
+          :pending-own-request="pendingOwnRequest"
           :event-log-entries="eventLog"
           :restricted-log-entries="restrictedLog"
+          :show-event-log="showEventLog"
+          :show-restricted-log="showRestrictedLog"
           :last-dice-roll="lastDiceRoll"
           :approval-mode="currentApprovalMode"
+          :show-discard-modal="showDiscardModal"
+          :discard-pile-modal="discardPileModal"
+          :show-main-hero-modal="showMainHeroModal"
+          :main-hero-pile-modal="mainHeroPileModal"
+          :is-spectator="isSpectator"
           @request-action="requestAction"
           @respond-approval="respondApproval"
           @flip-card="flipCard"
           @view-discard="viewDiscard"
+          @view-main-hero-deck="viewMainHeroDeck"
+          @close-discard-modal="closeDiscardModal"
+          @close-main-hero-modal="closeMainHeroModal"
           @roll-dice="rollDice"
           @toggle-approval="toggleApproval"
+          @toggle-event-log="onToggleEventLog"
+          @toggle-restricted-log="onToggleRestrictedLog"
           @reset-lobby="resetLobby"
         ></game-view>
 

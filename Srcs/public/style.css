@@ -146,6 +146,19 @@ input {
   margin: 0 0 10px;
 }
 
+.lobby-separator {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 20px 0;
+}
+
+.spectator-join {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
 /* =============================
    Top bar
    ============================= */
@@ -174,6 +187,16 @@ input {
   background: #7a3f48;
 }
 
+.spectator-badge {
+  background: rgba(255, 255, 255, 0.1);
+  color: #aaa;
+  border-radius: 12px;
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
 /* =============================
    Board layout
    ============================= */
@@ -189,7 +212,7 @@ input {
   gap: 14px;
   width: 100%;
   min-height: 100vh;
-  padding: 56px 300px 12px 12px;
+  padding: 56px 300px 12px 300px;
 }
 
 .top-player {
@@ -247,11 +270,29 @@ input {
   transform: none;
 }
 
+.player-zone.position-top .player-nickname {
+  transform: rotate(180deg);
+}
+
+.player-zone.position-left .player-nickname {
+  transform: rotate(-90deg);
+}
+
+.player-zone.position-right .player-nickname {
+  transform: rotate(90deg);
+}
+
+.player-zone.position-bottom .player-nickname {
+  transform: none;
+}
+
 .player-zone-local .player-nickname {
   color: #ffffff;
 }
 
 .player-nickname {
+  display: inline-block;
+  transform-origin: center center;
   font-weight: 600;
   color: #dcdcdc;
 }
@@ -275,8 +316,8 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 16px;
+  gap: 16px;
+  padding: 20px;
   border-radius: 12px;
   background: rgba(0, 0, 0, 0.5);
 }
@@ -290,9 +331,36 @@ input {
 }
 
 .hero-deck-pile,
+.mainhero-deck-pile,
 .monster-deck-pile,
 .discard-pile {
   min-width: 90px;
+}
+
+.mainhero-deck-pile {
+  top: 56px;
+  right: 12px;
+  z-index: 220;
+  position: fixed;
+  min-width: 74px;
+}
+
+.mainhero-deck-pile .pile-label {
+  max-width: 74px;
+}
+
+.mainhero-deck-pile .card {
+  width: 68px;
+  height: 95px;
+}
+
+.monster-deck-pile {
+  padding: 8px;
+}
+
+.active-monster-slots {
+  padding: 8px 12px;
+  gap: 10px;
 }
 
 .active-monster-row {
@@ -430,6 +498,44 @@ input {
   background: rgba(0, 0, 0, 0.6);
 }
 
+.own-request-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: all;
+}
+
+.own-request-box {
+  background: #2a2a3e;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 32px 40px;
+  text-align: center;
+  color: #fff;
+  min-width: 320px;
+}
+
+.own-request-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.own-request-details {
+  font-size: 0.95rem;
+  color: #aaa;
+  margin-bottom: 8px;
+}
+
+.own-request-hint {
+  font-size: 0.8rem;
+  color: #666;
+}
+
 .approval-popup-box {
   min-width: 300px;
   max-width: 560px;
@@ -470,6 +576,101 @@ input {
 }
 
 /* =============================
+   Discard modal
+   ============================= */
+
+.discard-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.discard-modal {
+  width: min(900px, 100%);
+  max-height: min(80vh, 720px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-radius: 12px;
+  padding: 18px;
+  background: #232536;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+}
+
+.discard-modal-title {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.discard-modal-grid {
+  flex: 1;
+  min-height: 160px;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+  padding: 6px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.discard-modal-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.discard-modal-take {
+  width: 100%;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 0.78rem;
+  background: #2f7a56;
+}
+
+.discard-modal-take:hover {
+  filter: brightness(1.07);
+}
+
+.discard-modal-take:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.discard-modal-empty {
+  margin: 0;
+  color: #d4d4d4;
+}
+
+.discard-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.discard-modal-close {
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 8px 16px;
+  background: #496175;
+}
+
+.discard-modal-close:hover {
+  filter: brightness(1.08);
+}
+
+/* =============================
    Logs
    ============================= */
 
@@ -488,6 +689,7 @@ input {
   font-size: 0.75rem;
   overflow-y: auto;
   border-radius: 0 8px 8px 0;
+  transition: opacity 200ms ease;
   background: rgba(0, 0, 0, 0.7);
   border-right: 1px solid rgba(255, 255, 255, 0.14);
 }
@@ -582,10 +784,30 @@ input {
   .center-table {
     flex-wrap: wrap;
     justify-content: center;
+    padding: 20px;
+  }
+
+  .mainhero-deck-pile {
+    top: 56px;
+    right: 8px;
+  }
+
+  .mainhero-deck-pile .pile-label {
+    max-width: 74px;
+  }
+
+  .mainhero-deck-pile .card {
+    width: 80px;
+    height: 112px;
   }
 
   .focus-preview,
   .log-panel {
     display: none;
+  }
+
+  .discard-modal {
+    max-height: 86vh;
+    padding: 14px;
   }
 }

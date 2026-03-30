@@ -9,6 +9,10 @@
         entries: {
           type: Array,
           default: () => []
+        },
+        visible: {
+          type: Boolean,
+          default: true
         }
       },
       computed: {
@@ -35,7 +39,7 @@
         }
       },
       template: `
-        <section class="log-panel restricted-log">
+        <section class="log-panel restricted-log" v-show="visible">
           <h3>Restricted Action History</h3>
 
           <div

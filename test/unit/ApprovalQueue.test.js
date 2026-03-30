@@ -113,18 +113,21 @@ describe('ApprovalQueue', () => {
     jest.useRealTimers();
   });
 
-  test('second enqueue while first pending is queued and runs after first resolves', () => {
+  test('second enqueue while first pending emits requester error and is not queued', () => {
     const io = { emit: jest.fn() };
+    io.to = jest.fn(() => ({ emit: jest.fn() }));
     const queue = new ApprovalQueue(io);
 
     const firstApproved = jest.fn();
     const secondApproved = jest.fn();
+    const requesterSocket = 'socket-1';
 
     queue.enqueue(
       {
         actionId: 'a5',
         type: 'DRAW_HERO',
         requesterId: 'p1',
+        requesterSocketId: requesterSocket,
         requesterNickname: 'Alice',
         payload: {},
         details: 'first action'
@@ -133,11 +136,12 @@ describe('ApprovalQueue', () => {
       jest.fn()
     );
 
-    queue.enqueue(
+    const secondResult = queue.enqueue(
       {
         actionId: 'a6',
         type: 'DRAW_HERO',
         requesterId: 'p1',
+        requesterSocketId: requesterSocket,
         requesterNickname: 'Alice',
         payload: {},
         details: 'second action'
@@ -146,16 +150,50 @@ describe('ApprovalQueue', () => {
       jest.fn()
     );
 
+    const requesterChannel = io.to.mock.results[0].value;
+
     expect(queue.current.action.actionId).toBe('a5');
+    expect(queue.queue).toHaveLength(0);
+    expect(secondResult).toBeNull();
+    expect(io.to).toHaveBeenCalledWith(requesterSocket);
+    expect(requesterChannel.emit).toHaveBeenCalledWith('error', {
+      message: 'An approval request is already pending. Please wait.'
+    });
 
     queue.approve('a5', 'p2', 'Bob');
 
     expect(firstApproved).toHaveBeenCalledTimes(1);
-    expect(queue.current.action.actionId).toBe('a6');
-
-    queue.approve('a6', 'p3', 'Carol');
-
-    expect(secondApproved).toHaveBeenCalledTimes(1);
+    expect(secondApproved).not.toHaveBeenCalled();
     expect(queue.current).toBeNull();
+  });
+
+  test('enqueue emits approval_pending and resolve emits approval_pending_cleared', () => {
+    const io = { emit: jest.fn() };
+    const queue = new ApprovalQueue(io);
+
+    queue.enqueue(
+      {
+        actionId: 'a7',
+        type: 'DRAW_HERO',
+        requesterId: 'p1',
+        requesterNickname: 'Alice',
+        payload: {},
+        details: 'draw hero'
+      },
+      jest.fn(),
+      jest.fn()
+    );
+
+    expect(io.emit).toHaveBeenCalledWith('approval_pending', {
+      actionId: 'a7',
+      type: 'DRAW_HERO',
+      requesterId: 'p1',
+      requesterNickname: 'Alice',
+      details: 'draw hero'
+    });
+
+    queue.approve('a7', 'p2', 'Bob');
+
+    expect(io.emit).toHaveBeenCalledWith('approval_pending_cleared');
   });
 });

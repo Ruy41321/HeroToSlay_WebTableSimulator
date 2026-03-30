@@ -22,12 +22,19 @@
       emits: ['hover', 'unhover', 'rightclick'],
       computed: {
         resolvedType() {
-          if (this.card && (this.card.type === 'hero' || this.card.type === 'monster')) {
+          if (
+            this.card &&
+            (this.card.type === 'hero' || this.card.type === 'monster' || this.card.type === 'mainhero')
+          ) {
             return this.card.type;
           }
 
           if (this.zone === 'monster-deck' || this.zone === 'active-monster') {
             return 'monster';
+          }
+
+          if (this.zone === 'mainhero-deck') {
+            return 'mainhero';
           }
 
           return 'hero';
@@ -46,7 +53,15 @@
             return this.card.name;
           }
 
-          return this.resolvedType === 'monster' ? 'Face-down monster card' : 'Face-down hero card';
+          if (this.resolvedType === 'monster') {
+            return 'Face-down monster card';
+          }
+
+          if (this.resolvedType === 'mainhero') {
+            return 'Face-down main hero card';
+          }
+
+          return 'Face-down hero card';
         }
       },
       methods: {

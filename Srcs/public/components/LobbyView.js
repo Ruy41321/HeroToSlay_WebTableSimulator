@@ -15,10 +15,11 @@
           default: false
         }
       },
-      emits: ['join', 'start', 'reset-lobby'],
+      emits: ['join', 'join-spectator', 'start', 'reset-lobby'],
       data() {
         return {
-          nicknameInput: ''
+          nicknameInput: '',
+          spectatorName: ''
         };
       },
       computed: {
@@ -46,54 +47,84 @@
         },
         requestReset() {
           this.$emit('reset-lobby');
+        },
+        submitSpectator() {
+          this.$emit('join-spectator', this.spectatorName);
+          this.spectatorName = '';
         }
       },
       template: `
         <section class="lobby-view">
-          <div v-if="gameInProgress" class="lobby-waiting-message">
-            <p>Game in progress - please wait</p>
-            <button
-              type="button"
-              class="lobby-reset-button reset-button"
-              @click="requestReset"
-            >
-              Reset Lobby
-            </button>
-          </div>
-
-          <div v-else class="lobby-controls">
+          <div class="lobby-controls">
             <h1>Hero to Slay Lobby</h1>
 
-            <div class="lobby-join-row">
+            <div v-if="gameInProgress" class="lobby-waiting-message">
+              <p>Game in progress - player queue is locked</p>
+            </div>
+
+            <div v-if="gameInProgress" class="lobby-join-row">
               <input
                 v-model="nicknameInput"
                 class="lobby-nickname-input"
                 type="text"
-                placeholder="Enter nickname"
+                placeholder="Enter previous nickname to rejoin"
                 @keyup.enter="submitJoin"
               />
 
               <button type="button" class="lobby-join-button" @click="submitJoin">
-                Join Queue
+                Rejoin
               </button>
             </div>
 
-            <div class="lobby-player-count">{{ players.length }} / 4 players</div>
+            <template v-else>
+              <div class="lobby-join-row">
+                <input
+                  v-model="nicknameInput"
+                  class="lobby-nickname-input"
+                  type="text"
+                  placeholder="Enter nickname"
+                  @keyup.enter="submitJoin"
+                />
 
-            <ul class="lobby-player-list">
-              <li v-for="player in players" :key="player.id">
-                {{ player.nickname }}
-              </li>
-            </ul>
+                <button type="button" class="lobby-join-button" @click="submitJoin">
+                  Join Queue
+                </button>
+              </div>
 
-            <button
-              type="button"
-              class="lobby-start-button"
-              :disabled="!canStart"
-              @click="submitStart"
-            >
-              Start Game
-            </button>
+              <div class="lobby-player-count">{{ players.length }} / 4 players</div>
+
+              <ul class="lobby-player-list">
+                <li v-for="player in players" :key="player.id">
+                  {{ player.nickname }}
+                </li>
+              </ul>
+
+              <button
+                type="button"
+                class="lobby-start-button"
+                :disabled="!canStart"
+                @click="submitStart"
+              >
+                Start Game
+              </button>
+            </template>
+
+            <hr class="lobby-separator" />
+
+            <div class="spectator-join">
+              <input
+                v-model="spectatorName"
+                class="lobby-nickname-input"
+                type="text"
+                placeholder="Display name (optional)"
+                maxlength="20"
+                @keyup.enter="submitSpectator"
+              />
+
+              <button type="button" class="lobby-join-button" @click="submitSpectator">
+                👁 Watch as Spectator
+              </button>
+            </div>
 
             <button
               type="button"

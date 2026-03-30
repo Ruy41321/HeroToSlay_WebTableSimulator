@@ -20,8 +20,18 @@ function isSupportedZone(zone) {
 
 function registerGameHandlers(io, socket, context) {
   socket.on('request_action', ({ type, payload } = {}) => {
+    if (socket.isSpectator) {
+      socket.emit('error', { message: 'Spectators cannot perform actions.' });
+      return;
+    }
+
     if (!context.gameInProgress) {
       emitError(socket, 'Cannot request actions while no game is running.');
+      return;
+    }
+
+    if (context.gameManager.approvalQueue.isPending) {
+      emitError(socket, 'An approval request is already pending. Please wait.');
       return;
     }
 
@@ -36,6 +46,8 @@ function registerGameHandlers(io, socket, context) {
       return;
     }
 
+    console.log(`[ACTION] ${requester.nickname} requested ${type.trim()}`);
+
     context.gameManager.requestAction(
       {
         type: type.trim(),
@@ -46,6 +58,11 @@ function registerGameHandlers(io, socket, context) {
   });
 
   socket.on('flip_card', ({ cardId, zone } = {}) => {
+    if (socket.isSpectator) {
+      socket.emit('error', { message: 'Spectators cannot perform actions.' });
+      return;
+    }
+
     if (!context.gameInProgress) {
       emitError(socket, 'Cannot flip cards while no game is running.');
       return;
@@ -80,6 +97,11 @@ function registerGameHandlers(io, socket, context) {
   });
 
   socket.on('view_discard', () => {
+    if (socket.isSpectator) {
+      socket.emit('error', { message: 'Spectators cannot perform actions.' });
+      return;
+    }
+
     if (!context.gameInProgress) {
       emitError(socket, 'Cannot view discard pile while no game is running.');
       return;
@@ -91,10 +113,41 @@ function registerGameHandlers(io, socket, context) {
       return;
     }
 
-    socket.emit('state_update', context.gameManager.getStateForPlayer(player.id));
+    const state = context.gameManager.getState();
+    const discardPile = Array.isArray(state.discardPile) ? state.discardPile : [];
+
+    socket.emit('discard_pile', { cards: discardPile });
+  });
+
+  socket.on('view_main_heroes', () => {
+    if (socket.isSpectator) {
+      socket.emit('error', { message: 'Spectators cannot perform actions.' });
+      return;
+    }
+
+    if (!context.gameInProgress) {
+      emitError(socket, 'Cannot view MainHero deck while no game is running.');
+      return;
+    }
+
+    const player = findConnectedPlayer(context, socket.id);
+    if (!player) {
+      emitError(socket, 'Only connected players can view MainHero deck.');
+      return;
+    }
+
+    const state = context.gameManager.getState();
+    const mainHeroDeck = Array.isArray(state.mainHeroDeck) ? state.mainHeroDeck : [];
+
+    socket.emit('mainhero_deck', { cards: mainHeroDeck });
   });
 
   socket.on('roll_dice', () => {
+    if (socket.isSpectator) {
+      socket.emit('error', { message: 'Spectators cannot perform actions.' });
+      return;
+    }
+
     if (!context.gameInProgress) {
       emitError(socket, 'Cannot roll dice while no game is running.');
       return;
@@ -120,6 +173,11 @@ function registerGameHandlers(io, socket, context) {
   });
 
   socket.on('toggle_approval', () => {
+    if (socket.isSpectator) {
+      socket.emit('error', { message: 'Spectators cannot perform actions.' });
+      return;
+    }
+
     if (!context.gameInProgress) {
       emitError(socket, 'Cannot toggle approval mode while no game is running.');
       return;

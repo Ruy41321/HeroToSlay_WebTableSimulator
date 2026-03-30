@@ -9,9 +9,22 @@ class ApprovalQueue {
     this.io = io;
     this.queue = [];
     this.current = null;
+    this.isPending = false;
   }
 
   enqueue(action, onApproved, onDenied) {
+    if (this.isPending) {
+      if (this.io && action && action.requesterSocketId) {
+        this.io.to(action.requesterSocketId).emit('error', {
+          message: 'An approval request is already pending. Please wait.'
+        });
+      }
+
+      return null;
+    }
+
+    this.isPending = true;
+
     const queueItem = {
       action,
       onApproved: typeof onApproved === 'function' ? onApproved : () => {},
@@ -22,6 +35,17 @@ class ApprovalQueue {
     };
 
     this.queue.push(queueItem);
+
+    if (this.io) {
+      this.io.emit('approval_pending', {
+        actionId: action.actionId,
+        type: action.type,
+        requesterId: action.requesterId,
+        requesterNickname: action.requesterNickname,
+        details: action.details
+      });
+    }
+
     this.processNext();
     return action.actionId;
   }
@@ -36,6 +60,7 @@ class ApprovalQueue {
 
     if (this.current.denials.size === 0 && this.current.approvals.size >= 1) {
       const resolvedItem = this.detachCurrent();
+      this.emitPendingCleared();
 
       try {
         resolvedItem.onApproved({
@@ -60,6 +85,7 @@ class ApprovalQueue {
     this.current.denials.add(denierKey);
 
     const resolvedItem = this.detachCurrent();
+    this.emitPendingCleared();
 
     try {
       resolvedItem.onDenied({
@@ -76,12 +102,19 @@ class ApprovalQueue {
   }
 
   clear() {
+    const hadPending = this.isPending;
+
     if (this.current && this.current.timeoutId) {
       clearTimeout(this.current.timeoutId);
     }
 
     this.current = null;
     this.queue = [];
+    this.isPending = false;
+
+    if (hadPending) {
+      this.emitPendingCleared();
+    }
   }
 
   processNext() {
@@ -107,6 +140,7 @@ class ApprovalQueue {
       }
 
       const timedOutItem = this.detachCurrent();
+      this.emitPendingCleared();
 
       try {
         timedOutItem.onDenied({
@@ -141,7 +175,16 @@ class ApprovalQueue {
     }
 
     this.current = null;
+    this.isPending = false;
     return resolvedItem;
+  }
+
+  emitPendingCleared() {
+    if (!this.io) {
+      return;
+    }
+
+    this.io.emit('approval_pending_cleared');
   }
 }
 

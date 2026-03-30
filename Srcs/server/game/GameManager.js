@@ -9,8 +9,19 @@ const Deck = require('../models/Deck');
 const ApprovalQueue = require('./ApprovalQueue');
 const RestrictedLog = require('./RestrictedLog');
 
+const DISCONNECTED_TTL_MS = 10 * 60 * 1000;
+const DISCONNECTED_CLEANUP_INTERVAL_MS = 60 * 1000;
+
 function deepClone(value) {
   return JSON.parse(JSON.stringify(value));
+}
+
+function toNicknameKey(nickname) {
+  if (typeof nickname !== 'string') {
+    return '';
+  }
+
+  return nickname.trim().toLowerCase();
 }
 
 class GameManager {
@@ -25,6 +36,18 @@ class GameManager {
         GameManager.instance.rawCards = cards;
       }
 
+      if (!(GameManager.instance.disconnectedPlayers instanceof Map)) {
+        GameManager.instance.disconnectedPlayers = new Map();
+      }
+
+      if (!(GameManager.instance.spectators instanceof Map)) {
+        GameManager.instance.spectators = new Map();
+      }
+
+      if (!GameManager.instance.disconnectCleanupIntervalId) {
+        GameManager.instance.startDisconnectedCleanup();
+      }
+
       return GameManager.instance;
     }
 
@@ -34,14 +57,73 @@ class GameManager {
     this.restrictedLog = new RestrictedLog();
     this.historyStack = [];
     this.state = this.createInitialState();
+    this.disconnectedPlayers = new Map();
+    this.spectators = new Map();
+    this.disconnectCleanupIntervalId = null;
+    this.onAutoReset = null;
+
+    this.startDisconnectedCleanup();
 
     GameManager.instance = this;
+  }
+
+  startDisconnectedCleanup() {
+    if (this.disconnectCleanupIntervalId) {
+      return;
+    }
+
+    this.disconnectCleanupIntervalId = setInterval(() => {
+      this.cleanupDisconnectedPlayers();
+    }, DISCONNECTED_CLEANUP_INTERVAL_MS);
+
+    if (typeof this.disconnectCleanupIntervalId.unref === 'function') {
+      this.disconnectCleanupIntervalId.unref();
+    }
+  }
+
+  cleanupDisconnectedPlayers() {
+    const now = Date.now();
+
+    const allPlayersDisconnectedForTTL =
+      this.state.phase === 'playing' &&
+      this.state.players.length > 0 &&
+      this.state.players.every((player) => {
+        if (!player || !player.isDisconnected) {
+          return false;
+        }
+
+        const nicknameKey = toNicknameKey(player.nickname);
+        if (!nicknameKey) {
+          return false;
+        }
+
+        const entry = this.disconnectedPlayers.get(nicknameKey);
+        return Boolean(entry && now - entry.disconnectedAt > DISCONNECTED_TTL_MS);
+      });
+
+    for (const [nicknameKey, entry] of this.disconnectedPlayers.entries()) {
+      const disconnectedAt = entry && Number.isFinite(entry.disconnectedAt) ? entry.disconnectedAt : 0;
+
+      if (now - disconnectedAt > DISCONNECTED_TTL_MS) {
+        this.disconnectedPlayers.delete(nicknameKey);
+      }
+    }
+
+    if (allPlayersDisconnectedForTTL) {
+      this.reset();
+
+      if (typeof this.onAutoReset === 'function') {
+        this.onAutoReset();
+      }
+    }
   }
 
   startGame(players) {
     const safePlayers = Array.isArray(players) ? players : [];
     const normalizedPlayers = safePlayers.map((player) => ({
       ...player,
+      socketId: player.socketId || null,
+      isDisconnected: false,
       hand: [],
       board: []
     }));
@@ -50,18 +132,25 @@ class GameManager {
       .filter((card) => card.type === 'hero')
       .map((card) => this.createCard(card));
 
+    const mainHeroCards = this.rawCards
+      .filter((card) => card.type === 'mainhero')
+      .map((card) => this.createCard(card));
+
     const monsterCards = this.rawCards
       .filter((card) => card.type === 'monster')
       .map((card) => this.createCard(card));
 
     const heroDeck = new Deck('hero', heroCards);
+    const mainHeroDeck = new Deck('mainhero', mainHeroCards);
     const monsterDeck = new Deck('monster', monsterCards);
     heroDeck.shuffle();
+    mainHeroDeck.shuffle();
     monsterDeck.shuffle();
 
     this.state = {
       players: normalizedPlayers,
       heroDeck: heroDeck.cards,
+      mainHeroDeck: mainHeroDeck.cards,
       monsterDeck: monsterDeck.cards,
       activeMonsters: [null, null, null],
       discardPile: [],
@@ -72,6 +161,7 @@ class GameManager {
     this.historyStack = [];
     this.restrictedLog.clear();
     this.approvalQueue.clear();
+    this.disconnectedPlayers.clear();
 
     this.broadcastState();
 
@@ -86,6 +176,16 @@ class GameManager {
     return deepClone(this.state);
   }
 
+  buildHiddenHand(hand) {
+    return Array.isArray(hand)
+      ? hand.map((card) => ({
+          id: card.id,
+          isFaceUp: false,
+          ownerId: card.ownerId
+        }))
+      : [];
+  }
+
   getStateForPlayer(playerId) {
     const filteredState = this.getState();
 
@@ -94,19 +194,22 @@ class GameManager {
         return player;
       }
 
-      const hiddenHand = Array.isArray(player.hand)
-        ? player.hand.map((card) => ({
-            id: card.id,
-            isFaceUp: false,
-            ownerId: card.ownerId
-          }))
-        : [];
-
       return {
         ...player,
-        hand: hiddenHand
+        hand: this.buildHiddenHand(player.hand)
       };
     });
+
+    return filteredState;
+  }
+
+  getStateForSpectator() {
+    const filteredState = this.getState();
+
+    filteredState.players = filteredState.players.map((player) => ({
+      ...player,
+      hand: this.buildHiddenHand(player.hand)
+    }));
 
     return filteredState;
   }
@@ -128,10 +231,16 @@ class GameManager {
   executeAction(action, approverId, approverNickname) {
     const supportedActionTypes = new Set([
       'DRAW_HERO',
+      'TAKE_MAIN_HERO_TO_BOARD',
+      'RETURN_MAIN_HERO_TO_DECK',
       'REVEAL_MONSTER',
       'TAKE_MONSTER',
+      'RETURN_ACTIVE_MONSTER_TO_BOTTOM',
       'TAKE_FROM_OPPONENT',
+      'TAKE_FROM_DISCARD',
       'DISCARD_CARD',
+      'ACTIVATE_CARD',
+      'RETURN_CARD_TO_HAND',
       'UNDO'
     ]);
 
@@ -147,17 +256,35 @@ class GameManager {
       case 'DRAW_HERO':
         this.handleDrawHero(action);
         break;
+      case 'TAKE_MAIN_HERO_TO_BOARD':
+        this.handleTakeMainHeroToBoard(action);
+        break;
+      case 'RETURN_MAIN_HERO_TO_DECK':
+        this.handleReturnMainHeroToDeck(action);
+        break;
       case 'REVEAL_MONSTER':
         this.handleRevealMonster();
         break;
       case 'TAKE_MONSTER':
         this.handleTakeMonster(action);
         break;
+      case 'RETURN_ACTIVE_MONSTER_TO_BOTTOM':
+        this.handleReturnActiveMonsterToBottom(action);
+        break;
       case 'TAKE_FROM_OPPONENT':
         this.handleTakeFromOpponent(action);
         break;
+      case 'TAKE_FROM_DISCARD':
+        this.handleTakeFromDiscard(action);
+        break;
       case 'DISCARD_CARD':
         this.handleDiscardCard(action);
+        break;
+      case 'ACTIVATE_CARD':
+        this.handleActivateCard(action);
+        break;
+      case 'RETURN_CARD_TO_HAND':
+        this.handleReturnCardToHand(action);
         break;
       case 'UNDO':
         this.undo();
@@ -193,6 +320,7 @@ class GameManager {
       actionId: action.actionId || uuidv4(),
       type: action.type,
       requesterId,
+      requesterSocketId: requester.socketId,
       requesterNickname: requester.nickname,
       payload: action.payload || {},
       details: action.details || this.describeAction(action.type, action.payload)
@@ -203,7 +331,7 @@ class GameManager {
       return fullAction.actionId;
     }
 
-    this.approvalQueue.enqueue(
+    return this.approvalQueue.enqueue(
       fullAction,
       ({ approverId, approverNickname } = {}) => {
         this.executeAction(fullAction, approverId || null, approverNickname || 'UnknownApprover');
@@ -220,8 +348,6 @@ class GameManager {
         }
       }
     );
-
-    return fullAction.actionId;
   }
 
   toggleApprovalMode() {
@@ -242,6 +368,11 @@ class GameManager {
 
       this.io.to(player.socketId).emit('state_update', this.getStateForPlayer(player.id));
     }
+
+    const spectatorState = this.getStateForSpectator();
+    for (const [socketId] of this.spectators) {
+      this.io.to(socketId).emit('state_update', spectatorState);
+    }
   }
 
   reset() {
@@ -249,6 +380,7 @@ class GameManager {
     this.historyStack = [];
     this.restrictedLog.clear();
     this.approvalQueue.clear();
+    this.disconnectedPlayers.clear();
 
     if (this.io) {
       this.io.emit('restricted_log', this.restrictedLog.getAll());
@@ -262,6 +394,7 @@ class GameManager {
     return {
       players: [],
       heroDeck: [],
+      mainHeroDeck: [],
       monsterDeck: [],
       activeMonsters: [null, null, null],
       discardPile: [],
@@ -281,22 +414,104 @@ class GameManager {
     return this.state.players.find((player) => player.id === playerId);
   }
 
+  markDisconnected(player) {
+    if (!player) {
+      return null;
+    }
+
+    const nicknameKey = toNicknameKey(player.nickname);
+    if (!nicknameKey) {
+      return null;
+    }
+
+    player.socketId = null;
+    player.isDisconnected = true;
+    this.disconnectedPlayers.set(nicknameKey, {
+      player,
+      disconnectedAt: Date.now()
+    });
+
+    return player;
+  }
+
+  findDisconnectedSlot(nickname) {
+    const nicknameKey = toNicknameKey(nickname);
+    if (!nicknameKey) {
+      return null;
+    }
+
+    const entry = this.disconnectedPlayers.get(nicknameKey);
+    return entry ? entry.player : null;
+  }
+
+  reconnectPlayer(nickname, newSocketId) {
+    const player = this.findDisconnectedSlot(nickname);
+    if (!player) {
+      return null;
+    }
+
+    player.socketId = newSocketId;
+    player.isDisconnected = false;
+    this.disconnectedPlayers.delete(toNicknameKey(player.nickname));
+
+    return {
+      player,
+      gameState: this.getStateForPlayer(player.id)
+    };
+  }
+
+  addSpectator(socketId, displayName) {
+    const safeDisplayName =
+      typeof displayName === 'string' && displayName.trim().length > 0 ? displayName.trim() : 'Spectator';
+
+    const spectator = {
+      socketId,
+      displayName: safeDisplayName
+    };
+
+    this.spectators.set(socketId, spectator);
+    return spectator;
+  }
+
+  removeSpectator(socketId) {
+    this.spectators.delete(socketId);
+  }
+
+  getSpectators() {
+    return Array.from(this.spectators.values()).map((spectator) => ({
+      socketId: spectator.socketId,
+      displayName: spectator.displayName
+    }));
+  }
+
   describeAction(type, payload) {
     const safePayload = payload || {};
 
     switch (type) {
       case 'DRAW_HERO':
         return 'drew from Hero Deck';
+      case 'TAKE_MAIN_HERO_TO_BOARD':
+        return `took MainHero ${safePayload.cardId || ''} to board`.trim();
+      case 'RETURN_MAIN_HERO_TO_DECK':
+        return `returned MainHero ${safePayload.cardId || ''} to MainHero Deck`.trim();
       case 'REVEAL_MONSTER':
         return 'revealed top Monster card';
       case 'TAKE_MONSTER':
         return `took Monster ${safePayload.cardId || ''}`.trim();
+      case 'RETURN_ACTIVE_MONSTER_TO_BOTTOM':
+        return `returned active Monster ${safePayload.cardId || ''} to bottom deck`.trim();
       case 'TAKE_FROM_OPPONENT':
         return `took card ${safePayload.cardId || ''} from opponent ${
           safePayload.fromPlayerId || safePayload.targetPlayerId || ''
         }`.trim();
+      case 'TAKE_FROM_DISCARD':
+        return `took card ${safePayload.cardId ?? ''} from discard pile`.trim();
       case 'DISCARD_CARD':
         return `discarded card ${safePayload.cardId || ''}`.trim();
+      case 'ACTIVATE_CARD':
+        return `activated card ${safePayload.cardId || ''}`.trim();
+      case 'RETURN_CARD_TO_HAND':
+        return `returned card ${safePayload.cardId || ''} to hand`.trim();
       case 'UNDO':
         return 'reverted above action';
       default:
@@ -312,8 +527,85 @@ class GameManager {
 
     const card = this.state.heroDeck.shift();
     card.ownerId = player.id;
-    card.isFaceUp = false;
+    card.isFaceUp = true;
     player.hand.push(card);
+  }
+
+  handleTakeMainHeroToBoard(action) {
+    const requester = this.findPlayerById(action.requesterId);
+    if (!requester) {
+      return;
+    }
+
+    if (!Array.isArray(this.state.mainHeroDeck)) {
+      this.state.mainHeroDeck = [];
+    }
+
+    const mainHeroDeck = this.state.mainHeroDeck;
+    if (mainHeroDeck.length === 0) {
+      return;
+    }
+
+    const payload = action.payload || {};
+    const cardId = payload.cardId;
+
+    if (cardId === undefined || cardId === null) {
+      return;
+    }
+
+    const cardIndex = mainHeroDeck.findIndex((card) => String(card.id) === String(cardId));
+    if (cardIndex === -1) {
+      return;
+    }
+
+    const [takenCard] = mainHeroDeck.splice(cardIndex, 1);
+    if (!takenCard) {
+      return;
+    }
+
+    takenCard.ownerId = requester.id;
+    takenCard.isFaceUp = true;
+    requester.board.push(takenCard);
+  }
+
+  handleReturnMainHeroToDeck(action) {
+    const requester = this.findPlayerById(action.requesterId);
+    if (!requester) {
+      return;
+    }
+
+    if (!Array.isArray(this.state.mainHeroDeck)) {
+      this.state.mainHeroDeck = [];
+    }
+
+    const mainHeroDeck = this.state.mainHeroDeck;
+    const payload = action.payload || {};
+    const cardId = payload.cardId;
+
+    if (cardId === undefined || cardId === null) {
+      return;
+    }
+
+    const board = Array.isArray(requester.board) ? requester.board : [];
+    if (board.length === 0) {
+      return;
+    }
+
+    const cardIndex = board.findIndex(
+      (card) => card && card.type === 'mainhero' && String(card.id) === String(cardId)
+    );
+    if (cardIndex === -1) {
+      return;
+    }
+
+    const [returnedCard] = board.splice(cardIndex, 1);
+    if (!returnedCard) {
+      return;
+    }
+
+    returnedCard.ownerId = null;
+    returnedCard.isFaceUp = false;
+    mainHeroDeck.push(returnedCard);
   }
 
   handleRevealMonster() {
@@ -357,6 +649,30 @@ class GameManager {
     player.board.push(takenMonster);
   }
 
+  handleReturnActiveMonsterToBottom(action) {
+    const payload = action.payload || {};
+
+    let slotIndex = Number.isInteger(payload.slotIndex) ? payload.slotIndex : -1;
+    if (slotIndex < 0 || slotIndex >= this.state.activeMonsters.length) {
+      slotIndex = this.state.activeMonsters.findIndex(
+        (monster) => monster && (payload.cardId ? String(monster.id) === String(payload.cardId) : true)
+      );
+    }
+
+    if (slotIndex === -1 || !this.state.activeMonsters[slotIndex]) {
+      return;
+    }
+
+    const [monsterCard] = this.state.activeMonsters.splice(slotIndex, 1, null);
+    if (!monsterCard) {
+      return;
+    }
+
+    monsterCard.ownerId = null;
+    monsterCard.isFaceUp = false;
+    this.state.monsterDeck.push(monsterCard);
+  }
+
   handleTakeFromOpponent(action) {
     const requester = this.findPlayerById(action.requesterId);
     if (!requester) {
@@ -387,7 +703,38 @@ class GameManager {
     }
 
     takenCard.ownerId = requester.id;
-    takenCard.isFaceUp = false;
+    takenCard.isFaceUp = true;
+    requester.hand.push(takenCard);
+  }
+
+  handleTakeFromDiscard(action) {
+    const requester = this.findPlayerById(action.requesterId);
+    const discardPile = Array.isArray(this.state.discardPile) ? this.state.discardPile : [];
+
+    if (!requester || discardPile.length === 0) {
+      return;
+    }
+
+    const payload = action.payload || {};
+    const cardId = payload.cardId;
+
+    // Safe fallback for missing cardId: do nothing.
+    if (cardId === undefined || cardId === null) {
+      return;
+    }
+
+    const cardIndex = discardPile.findIndex((card) => String(card.id) === String(cardId));
+    if (cardIndex === -1) {
+      return;
+    }
+
+    const [takenCard] = discardPile.splice(cardIndex, 1);
+    if (!takenCard) {
+      return;
+    }
+
+    takenCard.ownerId = requester.id;
+    takenCard.isFaceUp = true;
     requester.hand.push(takenCard);
   }
 
@@ -432,6 +779,72 @@ class GameManager {
     discardedCard.ownerId = null;
     discardedCard.isFaceUp = true;
     this.state.discardPile.push(discardedCard);
+  }
+
+  handleActivateCard(action) {
+    const player = this.findPlayerById(action.requesterId);
+    if (!player) {
+      return;
+    }
+
+    const payload = action.payload || {};
+    const cardId = payload.cardId;
+
+    // Safe fallback for missing cardId: do nothing.
+    if (cardId === undefined || cardId === null) {
+      return;
+    }
+
+    const hand = Array.isArray(player.hand) ? player.hand : [];
+    if (hand.length === 0) {
+      return;
+    }
+
+    const cardIndex = hand.findIndex((card) => String(card.id) === String(cardId));
+    if (cardIndex === -1) {
+      return;
+    }
+
+    const [activatedCard] = hand.splice(cardIndex, 1);
+    if (!activatedCard) {
+      return;
+    }
+
+    activatedCard.ownerId = player.id;
+    player.board.push(activatedCard);
+  }
+
+  handleReturnCardToHand(action) {
+    const player = this.findPlayerById(action.requesterId);
+    if (!player) {
+      return;
+    }
+
+    const payload = action.payload || {};
+    const cardId = payload.cardId;
+
+    // Safe fallback for missing cardId: do nothing.
+    if (cardId === undefined || cardId === null) {
+      return;
+    }
+
+    const board = Array.isArray(player.board) ? player.board : [];
+    if (board.length === 0) {
+      return;
+    }
+
+    const cardIndex = board.findIndex((card) => String(card.id) === String(cardId));
+    if (cardIndex === -1) {
+      return;
+    }
+
+    const [returnedCard] = board.splice(cardIndex, 1);
+    if (!returnedCard) {
+      return;
+    }
+
+    returnedCard.ownerId = player.id;
+    player.hand.push(returnedCard);
   }
 }
 

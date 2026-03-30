@@ -9,6 +9,10 @@
         entries: {
           type: Array,
           default: () => []
+        },
+        visible: {
+          type: Boolean,
+          default: true
         }
       },
       methods: {
@@ -34,7 +38,7 @@
         }
       },
       template: `
-        <section class="log-panel event-log">
+        <section class="log-panel event-log" v-show="visible">
           <h3>Event Log</h3>
 
           <div

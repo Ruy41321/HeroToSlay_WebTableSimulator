@@ -72,7 +72,8 @@ const sharedState = {
         id: player.id,
         nickname: player.nickname
       })),
-      gameInProgress: this.gameInProgress
+      gameInProgress: this.gameInProgress,
+      spectators: this.gameManager.getSpectators()
     };
   },
   broadcastLobbyUpdate() {
@@ -80,7 +81,18 @@ const sharedState = {
   }
 };
 
+gameManager.onAutoReset = () => {
+  console.log('[GAME] Auto-reset after disconnected player timeout');
+  sharedState.lobbyPlayers = [];
+  sharedState.gameInProgress = false;
+  sharedState.broadcastLobbyUpdate();
+};
+
 io.on('connection', (socket) => {
+  console.log(`[LOBBY] Player connected: socketId=${socket.id}`);
+  socket.isSpectator = false;
+  socket.playerId = null;
+  socket.nickname = null;
   socket.emit('lobby_update', sharedState.buildLobbyPayload());
 
   registerLobbyHandlers(io, socket, sharedState);
@@ -90,7 +102,7 @@ io.on('connection', (socket) => {
 
 if (require.main === module) {
   httpServer.listen(PORT, () => {
-    console.log('Server running on http://localhost:3000');
+    console.log('[SERVER] Running on http://localhost:3000');
   });
 }
 

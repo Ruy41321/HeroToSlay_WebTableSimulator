@@ -57,12 +57,12 @@
         <section class="player-zone" :class="[positionClass, { 'player-zone-local': isLocal }]">
           <div class="player-nickname">{{ player.nickname }}</div>
 
-          <div class="player-hand">
+          <div class="player-board">
             <card-component
-              v-for="card in handCards"
-              :key="'hand-' + card.id"
+              v-for="card in boardCards"
+              :key="'board-' + card.id"
               :card="card"
-              zone="hand"
+              zone="board"
               :is-own="isLocal"
               @hover="forwardHover"
               @unhover="forwardUnhover"
@@ -70,12 +70,12 @@
             ></card-component>
           </div>
 
-          <div class="player-board">
+          <div class="player-hand">
             <card-component
-              v-for="card in boardCards"
-              :key="'board-' + card.id"
+              v-for="card in handCards"
+              :key="'hand-' + card.id"
               :card="card"
-              zone="board"
+              zone="hand"
               :is-own="isLocal"
               @hover="forwardHover"
               @unhover="forwardUnhover"

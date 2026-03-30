@@ -209,4 +209,188 @@ describe('Game integration', () => {
 
     expect(flippedState.approvalMode).toBe(!initialMode);
   });
+
+  test('roll_dice emits dice_result and exactly one roll event_log entry', async () => {
+    const { playerA } = await joinAndStartGame();
+
+    const rollLogMessages = [];
+    const onRollLog = ({ message } = {}) => {
+      if (typeof message === 'string' && /^Alice rolled a \d+\.$/.test(message)) {
+        rollLogMessages.push(message);
+      }
+    };
+
+    playerA.on('event_log', onRollLog);
+
+    const diceResultPromise = waitForEvent(
+      playerA,
+      'dice_result',
+      4000,
+      (payload) => payload && payload.nickname === 'Alice' && Number.isInteger(payload.result)
+    );
+
+    playerA.emit('roll_dice', {});
+
+    const diceResult = await diceResultPromise;
+    const expectedLogMessage = `Alice rolled a ${diceResult.result}.`;
+
+    await waitForCondition(() => rollLogMessages.includes(expectedLogMessage));
+    await new Promise((resolve) => setTimeout(resolve, 150));
+
+    const matches = rollLogMessages.filter((message) => message === expectedLogMessage);
+    expect(matches).toHaveLength(1);
+
+    playerA.off('event_log', onRollLog);
+  });
+
+  test('view_discard emits discard_pile with full public card data', async () => {
+    const { playerA, playerAId } = await joinAndStartGame();
+
+    sharedState.gameManager.state.approvalMode = false;
+
+    const drawnStatePromise = waitForEvent(playerA, 'state_update', 4000, (state) => {
+      if (!state || !Array.isArray(state.players)) {
+        return false;
+      }
+
+      const local = state.players.find((player) => String(player.id) === String(playerAId));
+      return Boolean(local && Array.isArray(local.hand) && local.hand.length > 0);
+    });
+
+    playerA.emit('request_action', { type: 'DRAW_HERO', payload: {} });
+
+    const drawnState = await drawnStatePromise;
+    const localAfterDraw = drawnState.players.find((player) => String(player.id) === String(playerAId));
+    const drawnCard = localAfterDraw.hand[0];
+
+    const discardedStatePromise = waitForEvent(playerA, 'state_update', 4000, (state) => {
+      return state && Array.isArray(state.discardPile) && state.discardPile.length > 0;
+    });
+
+    playerA.emit('request_action', {
+      type: 'DISCARD_CARD',
+      payload: {
+        cardId: drawnCard.id,
+        zone: 'hand'
+      }
+    });
+
+    await discardedStatePromise;
+
+    const discardPilePromise = waitForEvent(playerA, 'discard_pile', 4000, (payload) => {
+      return payload && Array.isArray(payload.cards) && payload.cards.length > 0;
+    });
+
+    playerA.emit('view_discard', {});
+
+    const payload = await discardPilePromise;
+    const serverDiscardPile = sharedState.gameManager.getState().discardPile;
+    const revealedCard = payload.cards[payload.cards.length - 1];
+
+    expect(payload.cards).toEqual(serverDiscardPile);
+    expect(Object.prototype.hasOwnProperty.call(revealedCard, 'name')).toBe(true);
+    expect(Object.prototype.hasOwnProperty.call(revealedCard, 'path')).toBe(true);
+    expect(Object.prototype.hasOwnProperty.call(revealedCard, 'isFaceUp')).toBe(true);
+    expect(revealedCard.isFaceUp).toBe(true);
+  });
+
+  test('request_action moves own card hand -> board -> hand with ACTIVATE_CARD and RETURN_CARD_TO_HAND', async () => {
+    const { playerA, playerAId } = await joinAndStartGame();
+
+    sharedState.gameManager.state.approvalMode = false;
+
+    const drawnStatePromise = waitForEvent(playerA, 'state_update', 4000, (state) => {
+      if (!state || !Array.isArray(state.players)) {
+        return false;
+      }
+
+      const local = state.players.find((player) => String(player.id) === String(playerAId));
+      return Boolean(local && Array.isArray(local.hand) && local.hand.length > 0);
+    });
+
+    playerA.emit('request_action', { type: 'DRAW_HERO', payload: {} });
+
+    const drawnState = await drawnStatePromise;
+    const localAfterDraw = drawnState.players.find((player) => String(player.id) === String(playerAId));
+    const drawnCard = localAfterDraw.hand[0];
+
+    const activatedStatePromise = waitForEvent(playerA, 'state_update', 4000, (state) => {
+      if (!state || !Array.isArray(state.players)) {
+        return false;
+      }
+
+      const local = state.players.find((player) => String(player.id) === String(playerAId));
+      if (!local) {
+        return false;
+      }
+
+      const inHand = local.hand.some((card) => String(card.id) === String(drawnCard.id));
+      const inBoard = local.board.some((card) => String(card.id) === String(drawnCard.id));
+
+      return !inHand && inBoard;
+    });
+
+    playerA.emit('request_action', {
+      type: 'ACTIVATE_CARD',
+      payload: { cardId: drawnCard.id }
+    });
+
+    const activatedState = await activatedStatePromise;
+    const localAfterActivate = activatedState.players.find((player) => String(player.id) === String(playerAId));
+
+    expect(localAfterActivate.hand.some((card) => String(card.id) === String(drawnCard.id))).toBe(false);
+    expect(localAfterActivate.board.some((card) => String(card.id) === String(drawnCard.id))).toBe(true);
+
+    const returnedStatePromise = waitForEvent(playerA, 'state_update', 4000, (state) => {
+      if (!state || !Array.isArray(state.players)) {
+        return false;
+      }
+
+      const local = state.players.find((player) => String(player.id) === String(playerAId));
+      if (!local) {
+        return false;
+      }
+
+      const inHand = local.hand.some((card) => String(card.id) === String(drawnCard.id));
+      const inBoard = local.board.some((card) => String(card.id) === String(drawnCard.id));
+
+      return inHand && !inBoard;
+    });
+
+    playerA.emit('request_action', {
+      type: 'RETURN_CARD_TO_HAND',
+      payload: { cardId: drawnCard.id }
+    });
+
+    const returnedState = await returnedStatePromise;
+    const localAfterReturn = returnedState.players.find((player) => String(player.id) === String(playerAId));
+
+    expect(localAfterReturn.hand.some((card) => String(card.id) === String(drawnCard.id))).toBe(true);
+    expect(localAfterReturn.board.some((card) => String(card.id) === String(drawnCard.id))).toBe(false);
+  });
+
+  test('spectator cannot request TAKE_FROM_DISCARD action', async () => {
+    await joinAndStartGame();
+
+    const spectator = await createClient();
+    const spectatorJoinedPromise = waitForEvent(spectator, 'spectator_joined', 4000);
+
+    spectator.emit('join_spectator', { displayName: 'Watcher' });
+    await spectatorJoinedPromise;
+
+    const errorPromise = waitForEvent(
+      spectator,
+      'error',
+      4000,
+      (payload) => payload && /Spectators cannot perform actions\./i.test(payload.message)
+    );
+
+    spectator.emit('request_action', {
+      type: 'TAKE_FROM_DISCARD',
+      payload: { cardId: 'd1' }
+    });
+
+    const errorPayload = await errorPromise;
+    expect(errorPayload.message).toMatch(/Spectators cannot perform actions\./i);
+  });
 });

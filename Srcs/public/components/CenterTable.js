@@ -10,6 +10,10 @@
           type: Array,
           default: () => []
         },
+        mainHeroDeck: {
+          type: Array,
+          default: () => []
+        },
         monsterDeck: {
           type: Array,
           default: () => []
@@ -34,6 +38,17 @@
             isFaceUp: false,
             path: '',
             name: top && top.name ? top.name : 'Hero Deck'
+          };
+        },
+        mainHeroDeckProxyCard() {
+          const top = this.mainHeroDeck[0] || null;
+
+          return {
+            id: top ? top.id : 'mainhero-deck',
+            type: 'mainhero',
+            isFaceUp: false,
+            path: '',
+            name: top && top.name ? top.name : 'MainHero Deck'
           };
         },
         monsterDeckProxyCard() {
@@ -71,8 +86,16 @@
         forwardUnhover() {
           this.$emit('card-unhover');
         },
-        forwardRightclick(payload) {
-          this.$emit('card-rightclick', payload);
+        forwardRightclick(payload, slotIndex = null) {
+          const enrichedPayload = {
+            ...(payload || {})
+          };
+
+          if (Number.isInteger(slotIndex)) {
+            enrichedPayload.slotIndex = slotIndex;
+          }
+
+          this.$emit('card-rightclick', enrichedPayload);
         },
         onDiscardRightClick(event) {
           if (this.topDiscardCard) {
@@ -91,6 +114,18 @@
       },
       template: `
         <section class="center-table">
+          <div class="center-pile mainhero-deck-pile">
+            <div class="pile-label">MainHero Deck ({{ mainHeroDeck.length }})</div>
+            <card-component
+              :card="mainHeroDeckProxyCard"
+              zone="mainhero-deck"
+              :is-own="false"
+              @hover="forwardHover"
+              @unhover="forwardUnhover"
+              @rightclick="forwardRightclick"
+            ></card-component>
+          </div>
+
           <div class="center-pile hero-deck-pile">
             <div class="pile-label">Hero Deck ({{ heroDeck.length }})</div>
             <card-component
@@ -130,7 +165,7 @@
                   :is-own="false"
                   @hover="forwardHover"
                   @unhover="forwardUnhover"
-                  @rightclick="forwardRightclick"
+                  @rightclick="forwardRightclick($event, slotIndex)"
                 ></card-component>
 
                 <div v-else class="monster-slot-empty"></div>
