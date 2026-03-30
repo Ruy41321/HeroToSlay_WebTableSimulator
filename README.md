@@ -1,140 +1,134 @@
 # Hero To Slay Simulator
 
-Simulatore web in locale di Hero To Slay per gruppi da 2 a 4 giocatori.
-Il progetto replica un tavolo condiviso con lobby unica, area centrale, zone giocatore,
-azioni libere/restritte, sistema di approvazione e log eventi.
+Preview placeholder:
+
+![Hero To Slay Preview](Assets/Miscellaneous/bg.jpg)
+
+Placeholder media tag: #file:bg.jpg
+
+## Concept
+Hero To Slay Simulator e un tavolo virtuale multiplayer real-time per partite da 2 a 4 giocatori, con supporto spettatori.
+
+Il progetto riproduce la dinamica da tavolo fisico con:
+- lobby condivisa
+- deck centrali e aree giocatore
+- drag and drop carte sul board
+- action flow con approvazione opzionale (Approval Mode)
+- log eventi e storico azioni approvate
 
 ## Cosa include
+- Backend Node.js + Express + Socket.IO
+- Frontend Vue 3 (CDN, nessun build step frontend)
+- Suite test completa (unit + integration) con Jest
+- Runtime Docker con orchestrazione via Makefile
+- Indicizzazione automatica delle carte da `Assets/` in `Srcs/cards.json`
 
-- Backend Node.js + Express + Socket.io per lobby e sincronizzazione realtime.
-- Frontend Vue 3 (via CDN) senza build step.
-- Gestione stato partita con classi OOP (`Card`, `Deck`, `Player`, `GameManager`, `ApprovalQueue`).
-- Log separati per eventi generali e azioni restritte.
-- Suite test Jest completa (unit + integration).
-- Esecuzione in Docker con `docker compose`.
-
-## Struttura progetto
-
-```
-.
-|- Assets/                     # immagini carte e asset statici
-|- Doc/                        # documentazione task
-|- HtS_Docker/                 # Dockerfile e docker-compose.yml
-|- Srcs/                       # codice applicazione (server, public, indexer, package)
-|- test/                       # test unitari e di integrazione
-|- Makefile                    # comandi rapidi progetto/test
-`- README.md
-```
+## Struttura repository
+- `Assets/`: immagini carte e sfondi
+- `Doc/`: documentazione tecnica
+- `HtS_Docker/`: Dockerfile e docker-compose
+- `Srcs/`: codice server/client + indexer
+- `test/`: test unitari e integrazione
+- `Makefile`: comandi operativi
+- `run_herotoslay.sh`: setup rapido automatizzato
 
 ## Requisiti
-
-- Docker + Docker Compose plugin (`docker compose`)
+Per workflow standard:
+- Docker
+- Docker Compose plugin (`docker compose`) oppure `docker-compose`
 - Make
 
-Il workflow standard del progetto e' Docker-only: non serve npm installato sulla macchina host.
-Il codice applicativo risiede in Srcs, mentre i file Docker risiedono in HtS_Docker.
+Per lo script rapido `run_herotoslay.sh` e consigliato anche:
+- Git
+- accesso SSH GitHub configurato (lo script usa URL `git@github.com:...`)
 
-## Prima configurazione
-
+## Avvio progetto (metodo consigliato nel repo corrente)
 1. Build immagini Docker:
 
 ```bash
 make setup
 ```
 
-2. Genera `Srcs/cards.json` dagli asset:
+2. Genera/aggiorna indice carte:
 
 ```bash
 make index
 ```
 
-`make index` legge le immagini da `Assets/` nella root del repository.
-
-Nota: il server richiede `/app/cards.json` nel container e viene mappato da `Srcs/cards.json`.
-
-Se in passato hai lanciato `npm install` in locale e vuoi pulire:
-
-```bash
-make clean-local
-```
-
-## Avvio rapido progetto
-
-Avvia il server in container:
+3. Avvia il simulatore:
 
 ```bash
 make start
 ```
 
-Apri nel browser:
+4. Apri nel browser:
 
 ```text
 http://localhost:3000
 ```
 
-## Gestione ciclo vita progetto
+## Comandi utili
+Lifecycle app:
 
 ```bash
-make start      # avvia app
-make stop       # ferma app
-make restart    # riavvia app
-make logs       # segue log app
-make clean      # stop + remove container (app/test)
+make start
+make stop
+make restart
+make rebuild
+make logs
+make clean
 ```
 
-Tutti i target usano automaticamente `HtS_Docker/docker-compose.yml`.
-
-Comandi equivalenti specifici app:
-
-```bash
-make app-start
-make app-stop
-make app-restart
-make app-logs
-make app-status
-make app-clean
-```
-
-## Eseguire i test
-
-Test completi in Docker:
+Testing in Docker:
 
 ```bash
 make test
-```
-
-Target disponibili:
-
-```bash
 make test-unit
 make test-integration
 make test-coverage
 ```
 
-## Gestione ciclo vita test
-
-```bash
-make test-start    # avvia servizio test
-make test-stop     # ferma servizio test
-make test-restart  # riavvia servizio test
-make test-logs     # segue log test
-make test-status   # stato container test
-make test-clean    # rimuove container test
-```
-
-## Note utili
-
-- Se il comando `docker compose` non fosse disponibile, puoi usare:
-
-```bash
-make DC='docker-compose -f HtS_Docker/docker-compose.yml' start
-```
-
-- Per l'elenco completo dei target Make:
+Elenco completo target:
 
 ```bash
 make help
 ```
 
-- Questo repository puo' essere esportato su un'altra macchina senza richiedere Node/npm host,
-  a patto di avere Docker + Make.
+## Setup rapido con run_herotoslay.sh
+Lo script `run_herotoslay.sh` e pensato per bootstrap da zero su una macchina nuova.
+
+### Cosa fa lo script
+1. Verifica prerequisiti (`make`, `docker`, `docker compose`/`docker-compose`)
+2. Clona il repository (o fa pull se gia presente)
+3. Entra nella cartella clonata e lancia `make rebuild`
+4. Mostra conferma finale
+
+### Come usarlo
+Dalla directory dove vuoi creare/aggiornare la copia del progetto:
+
+```bash
+chmod +x run_herotoslay.sh
+./run_herotoslay.sh
+```
+
+Nota importante:
+- lo script clona in una directory chiamata `HeroToSlay_WebTableSimulator`
+- usa remote SSH, quindi serve una chiave GitHub valida
+
+## Operativita gameplay (sintesi)
+- entra in lobby con nickname
+- avvia partita (minimo 2 player)
+- usa click destro sulle carte/pile per azioni contestuali
+- abilita/disabilita Approval Mode dalla top bar
+- usa roll d12 integrato
+- spectator mode disponibile dalla lobby
+
+## Documentazione tecnica dettagliata
+Per analisi completa della codebase:
+- `Doc/Documentazione_Progetto.md`
+
+## Troubleshooting rapido
+- Errore su `cards.json`: esegui `make index`
+- Porta 3000 occupata: ferma processi/container e rilancia `make start`
+- Problemi compose: verifica `docker compose version`
+- Script rapido fallisce su clone: controlla accesso SSH GitHub
