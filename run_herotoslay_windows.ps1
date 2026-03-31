@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 
 param(
-    [string]$RepoUrl = "git@github.com:Ruy41321/HeroToSlay_WebTableSimulator.git",
+    [string]$RepoUrl = "https://github.com/Ruy41321/HeroToSlay_WebTableSimulator.git",
     [string]$RepoDir = "HeroToSlay_WebTableSimulator",
     [string]$Branch = "",
     [switch]$NoPull,

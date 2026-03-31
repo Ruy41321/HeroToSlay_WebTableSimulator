@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-REPO_URL="git@github.com:Ruy41321/HeroToSlay_WebTableSimulator.git"
+REPO_URL="https://github.com/Ruy41321/HeroToSlay_WebTableSimulator.git"
 REPO_DIR="HeroToSlay_WebTableSimulator"
 COMPOSE_FILE="HtS_Docker/docker-compose.yml"
 PULL_IF_EXISTS=1
