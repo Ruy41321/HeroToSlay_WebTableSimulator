@@ -30,17 +30,27 @@ Il progetto riproduce la dinamica da tavolo fisico con:
 - `Srcs/`: codice server/client + indexer
 - `test/`: test unitari e integrazione
 - `Makefile`: comandi operativi
-- `run_herotoslay.sh`: setup rapido automatizzato
+- `run_herotoslay.sh`: avvio rapido Linux/macOS
+- `run_herotoslay_windows.bat`: avvio rapido Windows (doppio click)
 
 ## Requisiti
-Per workflow standard:
+Per workflow standard via Makefile:
 - Docker
 - Docker Compose plugin (`docker compose`) oppure `docker-compose`
 - Make
 
-Per lo script rapido `run_herotoslay.sh` e consigliato anche:
-- Git
-- accesso SSH GitHub configurato (lo script usa URL `git@github.com:...`)
+Per script rapido Linux/macOS `run_herotoslay.sh`:
+- Docker
+- Docker Compose plugin (`docker compose`) oppure `docker-compose`
+- Git solo se la cartella repo non esiste ancora (clone) o se vuoi aggiornare con pull
+- Make opzionale: se non presente, lo script usa automaticamente i comandi Docker Compose equivalenti
+- accesso SSH GitHub configurato (lo script usa URL `git@github.com:...` di default)
+
+Per script rapido Windows `run_herotoslay_windows.bat`:
+- Docker Desktop (con `docker` disponibile)
+- Docker Compose plugin (`docker compose`) oppure `docker-compose`
+- Git solo se la cartella repo non esiste ancora (clone) o se vuoi aggiornare con pull
+- nessuna dipendenza da Make
 
 ## Avvio progetto (metodo consigliato nel repo corrente)
 1. Build immagini Docker:
@@ -94,26 +104,56 @@ Elenco completo target:
 make help
 ```
 
-## Setup rapido con run_herotoslay.sh
-Lo script `run_herotoslay.sh` e pensato per bootstrap da zero su una macchina nuova.
+## Setup rapido con script automatici
 
-### Cosa fa lo script
-1. Verifica prerequisiti (`make`, `docker`, `docker compose`/`docker-compose`)
-2. Clona il repository (o fa pull se gia presente)
-3. Entra nella cartella clonata e lancia `make rebuild`
-4. Mostra conferma finale
+Entrambi gli script:
+- verificano prerequisiti principali (`docker`, compose)
+- clonano la repo se non esiste
+- se la repo esiste, provano ad aggiornarla (salvo opzione `--no-pull`)
+- avviano il progetto
+- verificano che il servizio `simulator` risulti effettivamente in esecuzione
 
-### Come usarlo
-Dalla directory dove vuoi creare/aggiornare la copia del progetto:
+### Linux/macOS: run_herotoslay.sh
+Uso:
 
 ```bash
 chmod +x run_herotoslay.sh
 ./run_herotoslay.sh
 ```
 
-Nota importante:
-- lo script clona in una directory chiamata `HeroToSlay_WebTableSimulator`
-- usa remote SSH, quindi serve una chiave GitHub valida
+Opzioni utili:
+- `--no-pull`: non aggiorna repo esistente
+- `--branch <name>`: usa una branch specifica
+- `--repo-dir <dir>`: cartella locale target
+- `--repo-url <url>`: URL repository
+- `--no-wait`: non attende ENTER a fine esecuzione
+- `--help`: mostra help
+
+### Windows: run_herotoslay_windows.bat
+Uso da doppio click:
+- esegui direttamente `run_herotoslay_windows.bat`
+
+Uso da terminale `cmd`:
+
+```bat
+run_herotoslay_windows.bat
+```
+
+Opzioni utili (identiche alla versione Linux):
+- `--no-pull`
+- `--branch <name>`
+- `--repo-dir <dir>`
+- `--repo-url <url>`
+- `--no-wait`
+- `--help` / `-h`
+
+Note Windows:
+- in caso di errore lo script stampa il messaggio e aspetta un input prima di chiudersi
+- non richiede PowerShell separato: e un solo file `.bat` standalone
+
+Nota importante Linux/macOS:
+- lo script clona in una directory chiamata `HeroToSlay_WebTableSimulator` (se non cambiata con `--repo-dir`)
+- usa remote SSH di default, quindi serve una chiave GitHub valida (o `--repo-url` HTTPS)
 
 ## Operativita gameplay (sintesi)
 - entra in lobby con nickname
@@ -131,4 +171,5 @@ Per analisi completa della codebase:
 - Errore su `cards.json`: esegui `make index`
 - Porta 80 occupata: ferma processi/container e rilancia `make start`
 - Problemi compose: verifica `docker compose version`
-- Script rapido fallisce su clone: controlla accesso SSH GitHub
+- Script rapido Linux fallisce su clone: controlla accesso SSH GitHub o usa `--repo-url` HTTPS
+- Script rapido Windows fallisce su clone: verifica `git --version` e permessi rete
