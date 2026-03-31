@@ -9,6 +9,7 @@ const PROJECT_ROOT = __dirname;
 const REPOSITORY_ROOT = path.resolve(PROJECT_ROOT, '..');
 const ASSETS_ROOT = path.join(REPOSITORY_ROOT, 'Assets');
 const OUTPUT_FILE_PATH = path.join(PROJECT_ROOT, 'cards.json');
+const BACKGROUNDS_OUTPUT_FILE_PATH = path.join(PROJECT_ROOT, 'public', 'backgrounds.json');
 const ACCEPTED_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp']);
 
 const CARD_FOLDERS = [
@@ -110,8 +111,28 @@ function buildCards() {
   return { cards, counts };
 }
 
+function buildBackgrounds() {
+  const backgroundsFolderPath = path.join(ASSETS_ROOT, 'Miscellaneous');
+
+  if (!fs.existsSync(backgroundsFolderPath)) {
+    console.warn(`Skipped missing folder: ${backgroundsFolderPath}`);
+    return [];
+  }
+
+  const relativeImagePaths = walkImageFilesRecursive(backgroundsFolderPath);
+
+  if (relativeImagePaths.length === 0) {
+    console.warn(`No supported background images found in: ${backgroundsFolderPath}`);
+  }
+
+  return relativeImagePaths.map((relativeImagePath) =>
+    normalizeToPublicPath('/Assets/Miscellaneous', relativeImagePath)
+  );
+}
+
 function main() {
   const { cards, counts } = buildCards();
+  const backgrounds = buildBackgrounds();
 
   console.log(`MainHero found: ${counts.MainHero}`);
   console.log(`DeckCards found: ${counts.DeckCards}`);
@@ -123,7 +144,9 @@ function main() {
   }
 
   fs.writeFileSync(OUTPUT_FILE_PATH, JSON.stringify(cards, null, 2), 'utf8');
+  fs.writeFileSync(BACKGROUNDS_OUTPUT_FILE_PATH, JSON.stringify(backgrounds, null, 2), 'utf8');
   console.log(`cards.json generated with ${cards.length} cards.`);
+  console.log(`backgrounds.json generated with ${backgrounds.length} backgrounds.`);
 }
 
 main();

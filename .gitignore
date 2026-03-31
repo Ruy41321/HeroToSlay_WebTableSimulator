@@ -5,3 +5,5 @@
 *.log
 *.tmp
 Prompt*
+Assets/Cards/*/*.png
+Assets/Cards/*/*/*.png

@@ -46,7 +46,7 @@
       }
     },
     mounted() {
-      this.applyCurrentBackground();
+      this.loadAvailableBackgrounds();
     },
     created() {
       if (!this.socket) {
@@ -258,6 +258,31 @@
       });
     },
     methods: {
+      async loadAvailableBackgrounds() {
+        try {
+          const response = await fetch('/backgrounds.json', { cache: 'no-store' });
+
+          if (!response.ok) {
+            this.applyCurrentBackground();
+            return;
+          }
+
+          const backgrounds = await response.json();
+          const validBackgrounds = Array.isArray(backgrounds)
+            ? backgrounds.filter((item) => typeof item === 'string' && item.trim().length > 0)
+            : [];
+
+          if (validBackgrounds.length > 0) {
+            this.availableBackgrounds = validBackgrounds;
+            this.currentBackgroundIndex = 0;
+          }
+
+          this.applyCurrentBackground();
+        } catch (error) {
+          console.warn('[BACKGROUND] Unable to load /backgrounds.json, using fallback list.', error);
+          this.applyCurrentBackground();
+        }
+      },
       prependEvent(entry) {
         this.eventLog.unshift(entry);
       },

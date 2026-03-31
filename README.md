@@ -1,5 +1,9 @@
 # Hero To Slay Simulator
 
+## Disclaimer
+Questo repository e un fan project non ufficiale, creato a scopo didattico/personale.
+Non e affiliato, sponsorizzato o approvato dai creatori/editori di Hero To Slay.
+
 Preview placeholder:
 
 ![Hero To Slay Preview](Assets/Miscellaneous/bg.jpg)
@@ -52,6 +56,55 @@ Per script rapido Windows `run_herotoslay_windows.bat`:
 - Git solo se la cartella repo non esiste ancora (clone) o se vuoi aggiornare con pull
 - nessuna dipendenza da Make
 
+## Asset carte obbligatori (importante)
+Per giocare correttamente devi includere anche gli asset grafici delle carte nella directory `Assets/Cards`.
+Senza le immagini carte il simulatore non riesce a popolare correttamente il catalogo e il gameplay risulta incompleto/non funzionante.
+
+Mini guida rapida:
+1. Inserisci i file immagine delle carte nelle sottocartelle corrette:
+	- `Assets/Cards/Heroes`
+	- `Assets/Cards/Deck`
+	- `Assets/Cards/Monsters`
+2. Formati supportati: `.png`, `.jpg`, `.jpeg`, `.webp`.
+3. Mantieni pure eventuali sottocartelle tematiche (es. classi eroe, magie, oggetti): l'indicizzatore scansiona in modo ricorsivo.
+4. Dopo aver copiato/aggiornato gli asset, rigenera il catalogo con:
+
+```bash
+make index
+```
+
+5. Avvia poi il progetto normalmente:
+
+```bash
+make start
+```
+
+Nota: il percorso corretto nel progetto e `Assets/Cards` (plurale).
+
+## Aggiungere nuovi background
+Puoi aggiungere background personalizzati per il tavolo di gioco.
+
+Mini guida rapida:
+1. Copia le immagini nella cartella `Assets/Miscellaneous`.
+2. Puoi usare anche sottocartelle (la scansione e ricorsiva).
+3. Formati supportati: `.png`, `.jpg`, `.jpeg`, `.webp`.
+4. Rigenera gli indici con:
+
+```bash
+make index
+```
+
+5. Avvia o riavvia il progetto:
+
+```bash
+make start
+```
+
+Come funziona tecnicamente:
+- Le carte vengono indicizzate in `Srcs/cards.json`.
+- I background vengono indicizzati in `Srcs/public/backgrounds.json` a partire da `Assets/Miscellaneous`.
+- In gioco puoi poi ciclare i background disponibili dall'interfaccia.
+
 ## Avvio progetto (metodo consigliato nel repo corrente)
 1. Build immagini Docker:
 
@@ -59,11 +112,15 @@ Per script rapido Windows `run_herotoslay_windows.bat`:
 make setup
 ```
 
-2. Genera/aggiorna indice carte:
+2. Genera/aggiorna indice carte e backgrounds disponibili:
 
 ```bash
 make index
 ```
+
+Il comando genera:
+- `Srcs/cards.json` (catalogo carte)
+- `Srcs/public/backgrounds.json` (lista background da `Assets/Miscellaneous`)
 
 3. Avvia il simulatore:
 
