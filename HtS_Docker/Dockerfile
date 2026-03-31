@@ -17,6 +17,6 @@ COPY test/ ./test/
 COPY Srcs/indexer.js ./
 COPY Srcs/cards.json ./cards.json
 
-EXPOSE 3000
+EXPOSE 80
 
 CMD ["node", "server/server.js"]

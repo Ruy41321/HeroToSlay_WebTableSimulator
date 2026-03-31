@@ -64,7 +64,7 @@ make start
 4. Apri nel browser:
 
 ```text
-http://localhost:3000
+http://localhost:80
 ```
 
 ## Comandi utili
@@ -129,6 +129,6 @@ Per analisi completa della codebase:
 
 ## Troubleshooting rapido
 - Errore su `cards.json`: esegui `make index`
-- Porta 3000 occupata: ferma processi/container e rilancia `make start`
+- Porta 80 occupata: ferma processi/container e rilancia `make start`
 - Problemi compose: verifica `docker compose version`
 - Script rapido fallisce su clone: controlla accesso SSH GitHub

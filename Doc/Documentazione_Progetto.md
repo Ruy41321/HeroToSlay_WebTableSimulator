@@ -271,7 +271,7 @@ Testing in Docker:
 
 ### 10.2 Docker
 `HtS_Docker/docker-compose.yml`:
-- servizio `simulator`: porta 3000, mount read-only Assets + cards
+- servizio `simulator`: porta 80, mount read-only Assets + cards
 - servizio `test` (profile `test`): esecuzione Jest
 
 `HtS_Docker/Dockerfile`:

@@ -19,7 +19,7 @@ const CARDS_FILE_PATH = path.join(PROJECT_ROOT, 'cards.json');
 const ASSETS_DIRECTORY = path.join(PROJECT_ROOT, 'Assets');
 const PUBLIC_DIRECTORY = path.join(PROJECT_ROOT, 'public');
 const INDEX_HTML_PATH = path.join(PUBLIC_DIRECTORY, 'index.html');
-const PORT = 3000;
+const PORT = 80;
 
 function loadCardsOrExit() {
   if (!fs.existsSync(CARDS_FILE_PATH)) {
@@ -102,7 +102,7 @@ io.on('connection', (socket) => {
 
 if (require.main === module) {
   httpServer.listen(PORT, () => {
-    console.log('[SERVER] Running on http://localhost:3000');
+    console.log('[SERVER] Running on http://localhost:80');
   });
 }
 
