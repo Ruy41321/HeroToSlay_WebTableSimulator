@@ -4,6 +4,12 @@
 Questo repository e un fan project non ufficiale, creato a scopo didattico/personale.
 Non e affiliato, sponsorizzato o approvato dai creatori/editori di Hero To Slay.
 
+## Licenza e asset
+Il codice sorgente del progetto e rilasciato con licenza MIT (vedi `LICENSE`).
+Gli asset grafici del gioco originale (carte, illustrazioni, nomi, loghi, ecc.) non sono coperti dalla MIT del codice e restano di proprieta dei rispettivi titolari.
+
+Per dettagli e linee guida di utilizzo degli asset, vedi `LICENSE-ASSETS.md`.
+
 Preview placeholder:
 
 ![Hero To Slay Preview](Preview.png)
