@@ -9,3 +9,6 @@ Assets/Cards/*.png
 Assets/Cards/*/*.png
 Assets/Cards/*/*/*.png
 Assets/Miscellaneous/*.png
+Assets/Miscellaneous/*.jpg
+Srcs/public/backgrounds.json
+Srcs/cards.json

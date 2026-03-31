@@ -43,7 +43,7 @@ help:
 	@echo "  make test-integration  Run integration tests in Docker"
 	@echo "  make test-coverage     Run tests with coverage in Docker"
 
-setup:
+setup: index
 	$(DC) build $(APP_SERVICE)
 	$(DC) --profile test build $(TEST_SERVICE)
 
