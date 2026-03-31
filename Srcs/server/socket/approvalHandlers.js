@@ -36,6 +36,7 @@ function registerApprovalHandlers(io, socket, context) {
     }
 
     if (decision === true) {
+      const actionInfo = pendingItem.action || {};
       const didApprove = context.gameManager.approvalQueue.approve(
         actionId,
         responder.id,
@@ -50,13 +51,18 @@ function registerApprovalHandlers(io, socket, context) {
       io.emit('approval_result', {
         actionId,
         granted: true,
-        approverNickname: responder.nickname
+        approverNickname: responder.nickname,
+        type: actionInfo.type || null,
+        details: actionInfo.details || null,
+        requesterNickname: actionInfo.requesterNickname || null,
+        requesterId: actionInfo.requesterId || null
       });
       console.log(`[APPROVAL] actionId=${actionId} granted=true by ${responder.nickname}`);
       return;
     }
 
     if (decision === false) {
+      const actionInfo = pendingItem.action || {};
       const didDeny = context.gameManager.approvalQueue.deny(actionId, responder.id, responder.nickname);
 
       if (!didDeny) {
@@ -67,7 +73,11 @@ function registerApprovalHandlers(io, socket, context) {
       io.emit('approval_result', {
         actionId,
         granted: false,
-        approverNickname: responder.nickname
+        approverNickname: responder.nickname,
+        type: actionInfo.type || null,
+        details: actionInfo.details || null,
+        requesterNickname: actionInfo.requesterNickname || null,
+        requesterId: actionInfo.requesterId || null
       });
       console.log(`[APPROVAL] actionId=${actionId} granted=false by ${responder.nickname}`);
       return;

@@ -285,6 +285,25 @@ input {
 
 .bottom-player {
   grid-area: bottom-player;
+  pointer-events: none;
+}
+
+/* Keep the bottom row transparent to pointer hit-testing except real interactive controls. */
+.bottom-player .player-zone {
+  pointer-events: none;
+}
+
+.bottom-player .player-board,
+.bottom-player .player-board *,
+.bottom-player .player-hand,
+.bottom-player .player-hand *,
+.bottom-player button,
+.bottom-player [role="button"],
+.bottom-player input,
+.bottom-player select,
+.bottom-player textarea,
+.bottom-player a {
+  pointer-events: auto;
 }
 
 .center-table-cell {

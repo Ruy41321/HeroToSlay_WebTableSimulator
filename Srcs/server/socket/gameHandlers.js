@@ -218,7 +218,7 @@ function registerGameHandlers(io, socket, context) {
       return;
     }
 
-    const result = Math.floor(Math.random() * 12) + 1;
+    const result = Math.floor(Math.random() * 11) + 2;
 
     io.emit('dice_result', {
       nickname: player.nickname,

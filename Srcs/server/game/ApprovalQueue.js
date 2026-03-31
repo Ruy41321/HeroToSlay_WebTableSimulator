@@ -154,7 +154,11 @@ class ApprovalQueue {
           this.io.emit('approval_result', {
             actionId: action.actionId,
             granted: false,
-            approverNickname: 'Timeout'
+            approverNickname: 'Timeout',
+            type: action.type || null,
+            details: action.details || null,
+            requesterNickname: action.requesterNickname || null,
+            requesterId: action.requesterId || null
           });
         }
       } finally {

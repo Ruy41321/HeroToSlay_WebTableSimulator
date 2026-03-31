@@ -193,16 +193,25 @@
       });
 
       this.socket.on('approval_result', (data = {}) => {
-        const { actionId, granted, approverNickname } = data;
+        const { actionId, granted, approverNickname, details, type } = data;
         console.log(`[APPROVAL] Result: granted=${granted}`);
         this.pendingApproval = null;
+
+        const pendingOwnRequest = this.pendingOwnRequest;
         this.pendingOwnRequest = null;
 
         const resultText = granted ? 'granted' : 'denied';
         const approverText = approverNickname || 'unknown player';
+        const actionText =
+          details ||
+          (pendingOwnRequest && pendingOwnRequest.details) ||
+          type ||
+          (pendingOwnRequest && pendingOwnRequest.type) ||
+          actionId ||
+          'unknown action';
 
         this.prependEvent({
-          message: `Approval ${resultText} for ${actionId || 'unknown action'} by ${approverText}`,
+          message: `Approval ${resultText} for ${actionText} by ${approverText}`,
           timestamp: new Date().toISOString()
         });
       });

@@ -675,6 +675,78 @@ class GameManager {
     }));
   }
 
+  resolveCardName(cardId, fallbackLabel = 'unknown card') {
+    if (cardId === undefined || cardId === null) {
+      return fallbackLabel;
+    }
+
+    const normalizedCardId = String(cardId);
+
+    const cardCollections = [];
+
+    for (const player of this.state.players || []) {
+      if (Array.isArray(player.hand)) {
+        cardCollections.push(player.hand);
+      }
+
+      if (Array.isArray(player.board)) {
+        cardCollections.push(player.board);
+      }
+    }
+
+    cardCollections.push(this.state.heroDeck || []);
+    cardCollections.push(this.state.mainHeroDeck || []);
+    cardCollections.push(this.state.monsterDeck || []);
+    cardCollections.push(this.state.discardPile || []);
+    cardCollections.push((this.state.activeMonsters || []).filter(Boolean));
+
+    for (const collection of cardCollections) {
+      const foundCard = Array.isArray(collection)
+        ? collection.find((card) => card && String(card.id) === normalizedCardId)
+        : null;
+
+      if (foundCard) {
+        return foundCard.name || fallbackLabel;
+      }
+    }
+
+    return fallbackLabel;
+  }
+
+  resolvePlayerLabel(playerId, fallbackLabel = 'unknown player') {
+    if (playerId === undefined || playerId === null) {
+      return fallbackLabel;
+    }
+
+    const player = this.findPlayerById(playerId);
+    if (player && player.nickname) {
+      return player.nickname;
+    }
+
+    return String(playerId);
+  }
+
+  resolveActiveMonsterName(payload, fallbackLabel = 'unknown monster') {
+    const safePayload = payload || {};
+
+    if (safePayload.cardId !== undefined && safePayload.cardId !== null) {
+      return this.resolveCardName(safePayload.cardId, fallbackLabel);
+    }
+
+    if (Number.isInteger(safePayload.slotIndex)) {
+      const slotMonster =
+        Array.isArray(this.state.activeMonsters) && this.state.activeMonsters[safePayload.slotIndex]
+          ? this.state.activeMonsters[safePayload.slotIndex]
+          : null;
+
+      if (slotMonster) {
+        return slotMonster.name || fallbackLabel;
+      }
+    }
+
+    return fallbackLabel;
+  }
+
   describeAction(type, payload) {
     const safePayload = payload || {};
 
@@ -682,27 +754,36 @@ class GameManager {
       case 'DRAW_HERO':
         return 'drew from DeckCards pile';
       case 'TAKE_MAIN_HERO_TO_BOARD':
-        return `took MainHero ${safePayload.cardId || ''} to board`.trim();
+        return `take MainHero ${this.resolveCardName(safePayload.cardId, 'unknown MainHero')} to board`;
       case 'RETURN_MAIN_HERO_TO_DECK':
-        return `returned MainHero ${safePayload.cardId || ''} to MainHero Deck`.trim();
+        return `return MainHero ${this.resolveCardName(safePayload.cardId, 'unknown MainHero')} to MainHero Deck`;
       case 'REVEAL_MONSTER':
         return 'revealed top Monsters card';
       case 'TAKE_MONSTER':
-        return `took Monsters ${safePayload.cardId || ''}`.trim();
+        return `take Monsters ${this.resolveActiveMonsterName(safePayload)}`;
       case 'RETURN_ACTIVE_MONSTER_TO_BOTTOM':
-        return `returned active Monsters ${safePayload.cardId || ''} to bottom deck`.trim();
-      case 'TAKE_FROM_OPPONENT':
-        return `took card ${safePayload.cardId || ''} from opponent ${
-          safePayload.fromPlayerId || safePayload.targetPlayerId || ''
-        }`.trim();
+        return `return active Monsters ${this.resolveActiveMonsterName(safePayload)} to bottom deck`;
+      case 'TAKE_FROM_OPPONENT': {
+        const opponentId =
+          safePayload.fromPlayerId || safePayload.targetPlayerId || safePayload.opponentId || safePayload.sourcePlayerId;
+        const opponentLabel = this.resolvePlayerLabel(opponentId);
+
+        return `took a card from opponent ${opponentLabel}`;
+      }
       case 'TAKE_FROM_DISCARD':
-        return `took card ${safePayload.cardId ?? ''} from discard pile`.trim();
+        return `take card ${this.resolveCardName(safePayload.cardId)} from discard pile`;
       case 'DISCARD_CARD':
-        return `discarded card ${safePayload.cardId || ''}`.trim();
-      case 'ACTIVATE_CARD':
-        return `activated card ${safePayload.cardId || ''}`.trim();
+        return `discard card ${this.resolveCardName(safePayload.cardId)}`;
+      case 'ACTIVATE_CARD': {
+        const cardLabel =
+          safePayload.cardId !== undefined && safePayload.cardId !== null
+            ? this.resolveCardName(safePayload.cardId)
+            : 'unknown card';
+
+        return `activate card ${cardLabel}`;
+      }
       case 'RETURN_CARD_TO_HAND':
-        return `returned card ${safePayload.cardId || ''} to hand`.trim();
+        return `return card ${this.resolveCardName(safePayload.cardId)} to hand`;
       case 'UNDO':
         return 'reverted above action';
       default:
