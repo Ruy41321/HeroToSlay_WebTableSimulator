@@ -2,12 +2,18 @@
 
 set -euo pipefail
 
-REPO_URL="https://github.com/Ruy41321/HeroToSlay_WebTableSimulator.git"
+REPO_URL="git@github.com:Ruy41321/HeroToSlay_WebTableSimulator.git"
 REPO_DIR="HeroToSlay_WebTableSimulator"
 COMPOSE_FILE="HtS_Docker/docker-compose.yml"
 PULL_IF_EXISTS=1
 TARGET_BRANCH=""
 WAIT_ON_EXIT=1
+
+wait_for_close() {
+    if [ -t 0 ]; then
+        read -r -p "Press ENTER to close... " _
+    fi
+}
 
 warn() {
     echo "[WARNING] $1"
@@ -15,8 +21,19 @@ warn() {
 
 error() {
     echo "[ERROR] $1"
+    wait_for_close
     exit 1
 }
+
+on_unexpected_error() {
+    local exit_code="$1"
+    local line_no="$2"
+    echo "[ERROR] Unexpected failure at line $line_no (exit code: $exit_code)."
+    wait_for_close
+    exit "$exit_code"
+}
+
+trap 'on_unexpected_error "$?" "$LINENO"' ERR
 
 check_required_command() {
     local cmd="$1"
@@ -112,6 +129,14 @@ run_compose() {
     "${COMPOSE_CMD[@]}" "$@"
 }
 
+verify_simulator_running() {
+    local running_services
+    running_services="$(run_compose ps --services --status running)"
+    if ! printf '%s\n' "$running_services" | grep -qx 'simulator'; then
+        error "Startup completed but 'simulator' is not running. Check docker logs."
+    fi
+}
+
 echo "[2/4] Downloading/updating repository..."
 if [ -d "$REPO_DIR" ]; then
     echo "[INFO] Directory '$REPO_DIR' already exists."
@@ -171,10 +196,12 @@ echo "[3/4] Starting project..."
         run_compose --profile test build test
         run_compose up -d simulator
     fi
+
+    verify_simulator_running
 )
 
 echo "[4/4] Done."
 echo "The server is available at 'localhost:80'."
 if [ "$WAIT_ON_EXIT" -eq 1 ]; then
-    read -r -p "Press ENTER to close... " _
+    wait_for_close
 fi
