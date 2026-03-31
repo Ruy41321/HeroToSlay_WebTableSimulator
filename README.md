@@ -65,18 +65,29 @@ Mini guida rapida:
 	- `Assets/Cards/Heroes`
 	- `Assets/Cards/Deck`
 	- `Assets/Cards/Monsters`
-2. Formati supportati: `.png`, `.jpg`, `.jpeg`, `.webp`.
-3. Mantieni pure eventuali sottocartelle tematiche (es. classi eroe, magie, oggetti): l'indicizzatore scansiona in modo ricorsivo.
-4. Dopo aver copiato/aggiornato gli asset, rigenera il catalogo con:
+2. Inserisci anche i file di retro carte (obbligatori) nella root `Assets/Cards` con questi nomi esatti:
+	- `Assets/Cards/hero_card_back.png`
+	- `Assets/Cards/main_hero_back.png`
+	- `Assets/Cards/monster_card_back.png`
+3. Formati supportati: `.png`, `.jpg`, `.jpeg`, `.webp`.
+4. Mantieni pure eventuali sottocartelle tematiche (es. classi eroe, magie, oggetti): l'indicizzatore scansiona in modo ricorsivo.
+5. Dopo aver copiato/aggiornato gli asset, rigenera il catalogo con:
 
 ```bash
 make index
 ```
 
-5. Avvia poi il progetto normalmente:
+6. Avvia poi il progetto normalmente:
 
 ```bash
 make start
+```
+
+7. Oppure esegui lo script rapido per fare setup e avvio in un solo passaggio:
+
+```bash
+./run_herotoslay.sh # Linux/macOS
+.\run_herotoslay_windows.bat # Windows
 ```
 
 Nota: il percorso corretto nel progetto e `Assets/Cards` (plurale).
