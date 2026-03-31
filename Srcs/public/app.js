@@ -24,10 +24,7 @@
         restrictedLog: [],
         showEventLog: false,
         showRestrictedLog: false,
-        availableBackgrounds: [
-          '/Assets/Miscellaneous/table_background.png',
-          '/Assets/Miscellaneous/bg.jpg',
-        ],
+        availableBackgrounds: [],
         currentBackgroundIndex: 0,
         lastDiceRoll: null,
         discardPileModal: [],
