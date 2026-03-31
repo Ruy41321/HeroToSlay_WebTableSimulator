@@ -6,7 +6,7 @@ Non e affiliato, sponsorizzato o approvato dai creatori/editori di Hero To Slay.
 
 Preview placeholder:
 
-![Hero To Slay Preview](Assets/Miscellaneous/bg.jpg)
+![Hero To Slay Preview](Preview.png)
 
 Placeholder media tag: #file:bg.jpg
 
