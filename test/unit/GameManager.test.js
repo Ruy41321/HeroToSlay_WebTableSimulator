@@ -533,6 +533,71 @@ describe('GameManager', () => {
     expect(requester.board.map((card) => card.id)).toEqual(['b1']);
   });
 
+  test('PUT_ON_TOP_OF_DECKCARDS moves selected card from requester hand to top of heroDeck', () => {
+    const io = buildIoMock();
+    const manager = new GameManager(io, buildCards());
+    const players = [new Player('p1', 'Alice', 's1'), new Player('p2', 'Bob', 's2')];
+
+    manager.startGame(players);
+
+    manager.state.players[0].hand = [
+      { id: 'h1', name: 'Hero A', type: 'DeckCards', path: '/h1.png', isFaceUp: true, ownerId: 'p1' },
+      { id: 'h2', name: 'Hero B', type: 'DeckCards', path: '/h2.png', isFaceUp: true, ownerId: 'p1' }
+    ];
+    manager.state.heroDeck = [
+      { id: 'd1', name: 'Deck 1', type: 'DeckCards', path: '/d1.png', isFaceUp: false, ownerId: null }
+    ];
+
+    manager.executeAction(
+      {
+        type: 'PUT_ON_TOP_OF_DECKCARDS',
+        requesterId: 'p1',
+        requesterNickname: 'Alice',
+        payload: { cardId: 'h2' }
+      },
+      'AUTO',
+      'AUTO'
+    );
+
+    const requester = manager.state.players.find((player) => player.id === 'p1');
+
+    expect(requester.hand.map((card) => card.id)).toEqual(['h1']);
+    expect(manager.state.heroDeck.map((card) => card.id)).toEqual(['h2', 'd1']);
+    expect(manager.state.heroDeck[0].ownerId).toBeNull();
+    expect(manager.state.heroDeck[0].isFaceUp).toBe(false);
+  });
+
+  test('PUT_ON_TOP_OF_DECKCARDS with invalid cardId does not mutate hand or heroDeck', () => {
+    const io = buildIoMock();
+    const manager = new GameManager(io, buildCards());
+    const players = [new Player('p1', 'Alice', 's1'), new Player('p2', 'Bob', 's2')];
+
+    manager.startGame(players);
+
+    manager.state.players[0].hand = [
+      { id: 'h1', name: 'Hero A', type: 'DeckCards', path: '/h1.png', isFaceUp: true, ownerId: 'p1' }
+    ];
+    manager.state.heroDeck = [
+      { id: 'd1', name: 'Deck 1', type: 'DeckCards', path: '/d1.png', isFaceUp: false, ownerId: null }
+    ];
+
+    manager.executeAction(
+      {
+        type: 'PUT_ON_TOP_OF_DECKCARDS',
+        requesterId: 'p1',
+        requesterNickname: 'Alice',
+        payload: { cardId: 'missing-card' }
+      },
+      'AUTO',
+      'AUTO'
+    );
+
+    const requester = manager.state.players.find((player) => player.id === 'p1');
+
+    expect(requester.hand.map((card) => card.id)).toEqual(['h1']);
+    expect(manager.state.heroDeck.map((card) => card.id)).toEqual(['d1']);
+  });
+
   test('RETURN_ACTIVE_MONSTER_TO_BOTTOM removes selected active monster and appends it face-down to deck', () => {
     const io = buildIoMock();
     const manager = new GameManager(io, buildCards());

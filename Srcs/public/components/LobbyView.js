@@ -19,7 +19,8 @@
       data() {
         return {
           nicknameInput: '',
-          spectatorName: ''
+          spectatorName: '',
+          showResetConfirmation: false
         };
       },
       computed: {
@@ -46,6 +47,13 @@
           this.$emit('start');
         },
         requestReset() {
+          this.showResetConfirmation = true;
+        },
+        cancelReset() {
+          this.showResetConfirmation = false;
+        },
+        confirmReset() {
+          this.showResetConfirmation = false;
           this.$emit('reset-lobby');
         },
         submitSpectator() {
@@ -138,6 +146,19 @@
             >
               Reset Lobby
             </button>
+
+            <div v-if="showResetConfirmation" class="approval-popup-overlay">
+              <div class="approval-popup-box">
+                <p class="approval-popup-text">
+                  Proceeding will end the current match. Are you sure you want to continue?
+                </p>
+
+                <div class="approval-popup-actions">
+                  <button type="button" class="reset-confirm-button" @click="confirmReset">Reset</button>
+                  <button type="button" class="reset-cancel-button" @click="cancelReset">Cancel</button>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       `

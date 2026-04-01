@@ -838,6 +838,32 @@ input {
   background: #c0392b;
 }
 
+.reset-confirm-button,
+.reset-cancel-button {
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 1rem;
+  border-radius: 6px;
+  padding: 8px 24px;
+}
+
+.reset-confirm-button {
+  background: #b22222;
+}
+
+.reset-confirm-button:hover {
+  background: #8f1b1b;
+}
+
+.reset-cancel-button {
+  background: #171717;
+}
+
+.reset-cancel-button:hover {
+  background: #0d0d0d;
+}
+
 /* =============================
    Discard modal
    ============================= */

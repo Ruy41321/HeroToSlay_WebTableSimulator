@@ -253,6 +253,7 @@ class GameManager {
       'DISCARD_CARD',
       'ACTIVATE_CARD',
       'RETURN_CARD_TO_HAND',
+      'PUT_ON_TOP_OF_DECKCARDS',
       'UNDO'
     ]);
 
@@ -297,6 +298,9 @@ class GameManager {
         break;
       case 'RETURN_CARD_TO_HAND':
         this.handleReturnCardToHand(action);
+        break;
+      case 'PUT_ON_TOP_OF_DECKCARDS':
+        this.handlePutOnTopOfDeckCards(action);
         break;
       case 'UNDO':
         this.undo();
@@ -784,6 +788,8 @@ class GameManager {
       }
       case 'RETURN_CARD_TO_HAND':
         return `return card ${this.resolveCardName(safePayload.cardId)} to hand`;
+      case 'PUT_ON_TOP_OF_DECKCARDS':
+        return `put card on top of DeckCards`;
       case 'UNDO':
         return 'reverted above action';
       default:
@@ -1125,6 +1131,39 @@ class GameManager {
     this.clearBoardLayoutMetadata(returnedCard);
     returnedCard.ownerId = player.id;
     player.hand.push(returnedCard);
+  }
+
+  handlePutOnTopOfDeckCards(action) {
+    const player = this.findPlayerById(action.requesterId);
+    if (!player) {
+      return;
+    }
+
+    const payload = action.payload || {};
+    const cardId = payload.cardId;
+
+    if (cardId === undefined || cardId === null) {
+      return;
+    }
+
+    const hand = Array.isArray(player.hand) ? player.hand : [];
+    if (hand.length === 0) {
+      return;
+    }
+
+    const cardIndex = hand.findIndex((card) => String(card.id) === String(cardId));
+    if (cardIndex === -1) {
+      return;
+    }
+
+    const [cardToDeck] = hand.splice(cardIndex, 1);
+    if (!cardToDeck) {
+      return;
+    }
+
+    cardToDeck.ownerId = null;
+    cardToDeck.isFaceUp = false;
+    this.state.heroDeck.unshift(cardToDeck);
   }
 }
 

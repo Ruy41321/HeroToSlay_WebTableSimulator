@@ -146,7 +146,8 @@
           boardOverrideCleanupTimers: {},
           dragState: null,
           activeDragCardId: null,
-          lastBoardContainerByCardId: {}
+          lastBoardContainerByCardId: {},
+          showResetConfirmation: false
         };
       },
       mounted() {
@@ -813,7 +814,11 @@
               return [
                 { label: 'Activate', action: { type: 'activate', cardId: card.id } },
                 { label: 'Flip', action: { type: 'flip', cardId: card.id, zone: 'hand' } },
-                { label: 'Discard', action: { type: 'discard', cardId: card.id, zone: 'hand' } }
+                { label: 'Discard', action: { type: 'discard', cardId: card.id, zone: 'hand' } },
+                {
+                  label: 'Put on top of DeckCards',
+                  action: { type: 'put-on-top-deckcards', cardId: card.id }
+                }
               ];
             }
 
@@ -930,6 +935,11 @@
                 zone: action.zone
               });
               break;
+            case 'put-on-top-deckcards':
+              this.$emit('request-action', 'PUT_ON_TOP_OF_DECKCARDS', {
+                cardId: action.cardId
+              });
+              break;
             case 'draw-hero':
               this.$emit('request-action', 'DRAW_HERO', {});
               break;
@@ -1000,6 +1010,13 @@
           this.$emit('close-main-hero-modal');
         },
         requestReset() {
+          this.showResetConfirmation = true;
+        },
+        cancelReset() {
+          this.showResetConfirmation = false;
+        },
+        confirmReset() {
+          this.showResetConfirmation = false;
           this.$emit('reset-lobby');
         }
       },
@@ -1144,6 +1161,19 @@
               <p class="own-request-title">⏳ Waiting for approval...</p>
               <p class="own-request-details">{{ pendingOwnRequest.details }}</p>
               <p class="own-request-hint">At least 1 other player must approve.</p>
+            </div>
+          </div>
+
+          <div v-if="showResetConfirmation" class="approval-popup-overlay">
+            <div class="approval-popup-box">
+              <p class="approval-popup-text">
+                Proceeding will end the current match. Are you sure you want to continue?
+              </p>
+
+              <div class="approval-popup-actions">
+                <button type="button" class="reset-confirm-button" @click="confirmReset">Reset</button>
+                <button type="button" class="reset-cancel-button" @click="cancelReset">Cancel</button>
+              </div>
             </div>
           </div>
 
