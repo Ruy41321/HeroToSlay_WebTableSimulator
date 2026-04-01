@@ -4,6 +4,7 @@ setlocal EnableExtensions
 set "REPO_URL=https://github.com/Ruy41321/HeroToSlay_WebTableSimulator.git"
 set "REPO_DIR=HeroToSlay_WebTableSimulator"
 set "COMPOSE_FILE=HtS_Docker/docker-compose.yml"
+set "NODE_IMAGE=node:20-alpine"
 set "NO_PULL=0"
 set "NO_WAIT=0"
 set "TARGET_BRANCH="
@@ -122,6 +123,12 @@ if exist "%REPO_DIR%\" (
 echo [3/4] Starting project...
 pushd "%REPO_DIR%" >nul 2>nul
 if errorlevel 1 call :fatal "Cannot access repository directory '%REPO_DIR%'."
+
+docker run --rm -v "%CD%:/workspace" -w /workspace/Srcs %NODE_IMAGE% node indexer.js
+if errorlevel 1 (
+  popd
+  call :fatal "Index generation failed. Be sure to have imported the card assets as specified in the README."
+)
 
 call :run_compose stop simulator >nul 2>nul
 if errorlevel 1 call :warn "Could not stop simulator (it may not be running). Continuing."

@@ -5,6 +5,7 @@ set -euo pipefail
 REPO_URL="git@github.com:Ruy41321/HeroToSlay_WebTableSimulator.git"
 REPO_DIR="HeroToSlay_WebTableSimulator"
 COMPOSE_FILE="HtS_Docker/docker-compose.yml"
+NODE_IMAGE="node:20-alpine"
 PULL_IF_EXISTS=1
 TARGET_BRANCH=""
 WAIT_ON_EXIT=1
@@ -129,6 +130,13 @@ run_compose() {
     "${COMPOSE_CMD[@]}" "$@"
 }
 
+run_index() {
+    docker run --rm \
+        -v "$PWD:/workspace" \
+        -w /workspace/Srcs \
+        "$NODE_IMAGE" node indexer.js
+}
+
 verify_simulator_running() {
     local running_services
     running_services="$(run_compose ps --services --status running)"
@@ -192,6 +200,9 @@ echo "[3/4] Starting project..."
         # Equivalente di: make rebuild -> stop clean setup start
         run_compose stop simulator || true
         run_compose --profile test down --remove-orphans
+        if ! run_index; then
+            error "Index generation failed. Be sure to have imported the card assets as specified in the README."
+        fi
         run_compose build simulator
         run_compose --profile test build test
         run_compose up -d simulator
