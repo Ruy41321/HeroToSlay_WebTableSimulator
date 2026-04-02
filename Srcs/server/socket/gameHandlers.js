@@ -218,7 +218,8 @@ function registerGameHandlers(io, socket, context) {
       return;
     }
 
-    const result = Math.floor(Math.random() * 11) + 2;
+    // Double dice roll (2d6)
+    const result = (Math.floor(Math.random() * 6) + 1) + (Math.floor(Math.random() * 6) + 1);
 
     io.emit('dice_result', {
       nickname: player.nickname,

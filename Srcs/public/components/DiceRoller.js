@@ -19,7 +19,7 @@
             class="dice-roll-button"
             @click="$emit('roll')"
           >
-            Roll Dice (d12)
+            Roll Dice (2d6)
           </button>
 
           <span v-if="lastRoll !== null" class="dice-roll-result">

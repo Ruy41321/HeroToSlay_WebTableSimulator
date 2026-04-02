@@ -232,7 +232,7 @@ Nota importante Linux/macOS:
 - avvia partita (minimo 2 player)
 - usa click destro sulle carte/pile per azioni contestuali
 - abilita/disabilita Approval Mode dalla top bar
-- usa roll d12 integrato
+- usa roll 2d6 integrato
 - spectator mode disponibile dalla lobby
 
 ## Documentazione tecnica dettagliata

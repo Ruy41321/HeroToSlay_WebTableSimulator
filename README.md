@@ -232,7 +232,7 @@ Important Linux/macOS note:
 - start match (minimum 2 players)
 - use right click on cards/piles for contextual actions
 - enable/disable Approval Mode from the top bar
-- use integrated d12 roll
+- use integrated 2d6 roll
 - spectator mode available from the lobby
 
 ## Detailed technical documentation
